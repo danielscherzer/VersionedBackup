@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "VersionedBackup": {
+      "commandName": "Project",
+      "commandLineArgs": "d:\\daten d:\\temp\\daten"
+    }
+  }
+}
