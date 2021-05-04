@@ -14,11 +14,10 @@ void Run(Options options)
 	var dst = options.DestinationDirectory;
 	var oldFilesFolder = $"{dst[0..^1]}-{DateTime.Now:yyyy-MM-dd_HHmmss}{Path.DirectorySeparatorChar}";
 
+	Version3MT.Run(benchmark, src, dst, oldFilesFolder);
 	benchmark.Delta("startup");
-	Benchmark.Repeat(5, () => Version3MT.Run(benchmark, src, dst, oldFilesFolder));
-	Benchmark.Repeat(5, () => Version3.Run(benchmark, src, dst, oldFilesFolder));
-	//Version2.Run(benchmark, src, dst, oldFilesFolder);
-	//benchmark.Total("-------------------------------");
-	//benchmark.Reset();
-	//Version1.Run(benchmark, src, dst, oldFilesFolder);
+	benchmark.Repeat(3, () => Version3MT.Run(benchmark, src, dst, oldFilesFolder), nameof(Version3MT));
+	//benchmark.Repeat(3, () => Version1.Run(benchmark, src, dst, oldFilesFolder), nameof(Version1));
+	//benchmark.Repeat(3, () => Version2.Run(benchmark, src, dst, oldFilesFolder), nameof(Version2));
+	//benchmark.Repeat(3, () => Version3.Run(benchmark, src, dst, oldFilesFolder), nameof(Version3));
 }

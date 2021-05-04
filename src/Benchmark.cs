@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text;
 
 namespace VersionedCopy
 {
@@ -15,16 +16,24 @@ namespace VersionedCopy
 			last = elapsed;
 		}
 
-		internal static void Repeat(int count, Action action)
+		internal void Repeat(int count, Action action, string name = "")
 		{
-			for (int i = 0; i < count; ++i) action();
+			StringBuilder sb = new(name);
+			sb.Append(" ");
+			for (int i = 0; i < count; ++i)
+			{
+				Reset();
+				action();
+				sb.Append(Conv(_stopwatch.Elapsed.TotalMilliseconds));
+			}
+			Log.Print(sb.ToString());
 		}
 
 		internal void Reset(string message = "")
 		{
 			_stopwatch.Restart();
 			last = TimeSpan.Zero;
-			Log.Print($"{message}");
+			if(!string.IsNullOrEmpty(message)) Log.Print(message);
 		}
 
 		internal void Total(string message = "")
@@ -36,7 +45,9 @@ namespace VersionedCopy
 
 		private static void Print(string message, TimeSpan elapsed)
 		{
-			Log.Print($"{(elapsed).TotalMilliseconds, 8:F2}ms {message}");
+			Log.Print($"{Conv(elapsed.TotalMilliseconds)} {message}");
 		}
+
+		private static string Conv(double msec) => $"{msec,8:F2}ms";
 	}
 }

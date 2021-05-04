@@ -8,7 +8,6 @@ namespace VersionedCopy
 		{
 			// walk through all folders and files in dst recursively and check if they exist in src
 			RemoveLeftovers(dst);
-			benchmark.Delta("remove leftovers");
 
 			void RemoveLeftovers(string dstDir)
 			{
@@ -39,7 +38,6 @@ namespace VersionedCopy
 
 			// copy all folders and files from src to dst recursively
 			Copy(src);
-			benchmark.Delta("copy");
 
 			void Copy(string srcDir)
 			{

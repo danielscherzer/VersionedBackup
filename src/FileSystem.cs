@@ -6,6 +6,7 @@ namespace VersionedCopy
 {
 	internal static class FileSystem
 	{
+		//TODO: make multi threaded
 		internal static IEnumerable<string> EnumerateDirsRecursive(this string dir)
 		{
 			var stack = new Stack<string>();
@@ -22,7 +23,7 @@ namespace VersionedCopy
 		}
 
 		internal static IEnumerable<string> EnumerateFiles(this IEnumerable<string> dirs) =>
-			from subDir in dirs
+			from subDir in dirs.AsParallel()
 			from file in Directory.EnumerateFiles(subDir)
 			select file;
 
