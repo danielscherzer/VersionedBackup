@@ -1,52 +1,36 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Text;
 
 namespace VersionedCopy
 {
-	class Benchmark
+	class Benchmark : IDisposable
 	{
-		readonly Stopwatch _stopwatch = Stopwatch.StartNew();
-		TimeSpan last = TimeSpan.Zero;
-
-		internal void Delta(string message = "")
+		public Benchmark(string message = "")
 		{
-			var elapsed = _stopwatch.Elapsed;
-			Print(message, elapsed - last);
-			last = elapsed;
+			Message = message;
 		}
 
-		internal void Repeat(int count, Action action, string name = "")
+		public string Message { get; set; }
+
+		public void Dispose()
 		{
-			StringBuilder sb = new(name);
-			sb.Append(" ");
+			var time = _stopwatch.Elapsed;
+			_stopwatch.Stop();
+			Print(Message, time);
+		}
+
+		public static void Repeat(int count, Action action, string name = "")
+		{
 			for (int i = 0; i < count; ++i)
 			{
-				Reset();
+				using var _ = new Benchmark(name);
 				action();
-				sb.Append(Conv(_stopwatch.Elapsed.TotalMilliseconds));
 			}
-			Log.Print(sb.ToString());
 		}
 
-		internal void Reset(string message = "")
-		{
-			_stopwatch.Restart();
-			last = TimeSpan.Zero;
-			if(!string.IsNullOrEmpty(message)) Log.Print(message);
-		}
+		private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
 
-		internal void Total(string message = "")
-		{
-			var elapsed = _stopwatch.Elapsed;
-			Print(message + "(total)", elapsed);
-			last = elapsed;
-		}
-
-		private static void Print(string message, TimeSpan elapsed)
-		{
-			Log.Print($"{Conv(elapsed.TotalMilliseconds)} {message}");
-		}
+		private static void Print(string message, TimeSpan elapsed) => Log.Print($"{Conv(elapsed.TotalMilliseconds)} {message}");
 
 		private static string Conv(double msec) => $"{msec,8:F2}ms";
 	}

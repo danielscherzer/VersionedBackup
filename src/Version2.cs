@@ -4,7 +4,7 @@ namespace VersionedCopy
 {
 	class Version2
 	{
-		internal static void Run(Benchmark benchmark, string src, string dst, string oldFilesFolder)
+		internal static void Run(string src, string dst, string oldFilesFolder)
 		{
 			// walk through all folders and files in dst recursively and check if they exist in src
 			RemoveLeftovers(dst);
