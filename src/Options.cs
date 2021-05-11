@@ -34,6 +34,9 @@ namespace VersionedCopy
 		[Value(1, Required = true, HelpText = "The destination directory of the copy operation.")]
 		public string DestinationDirectory { get; } = "";
 
+		/// <summary>
+		/// List of directories including trailing path delimiter
+		/// </summary>
 		[Option(longName: "ignoreDirectories", Required = false, HelpText = "A list of ignored files.")]
 		public IEnumerable<string> IgnoreDirectories { get; } = Enumerable.Empty<string>();
 
