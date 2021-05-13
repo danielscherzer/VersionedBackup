@@ -1,15 +1,28 @@
-//TODO: if program stopped last saved file is invalid
+//TODO: if program stopped last saved files is invalid
 
 using CommandLine;
 using System;
+using System.IO;
 using System.Threading;
 using VersionedCopy;
+using VersionedCopy.Interfaces;
+using VersionedCopy.Services;
 
 Parser.Default.ParseArguments<Options>(args).WithParsed(options => Run(options));
 
-void Run(Options options)
+void Run(IOptions options)
 {
+	// create services
+	ILogger logger = new Logger();
+	IFileSystem fileSystem = new FileSystem(logger, options.LogOperations, options.LogErrors);
 	var cts = new CancellationTokenSource();
 	Console.CancelKeyPress += (_, _) => cts.Cancel();
-	Benchmark.Repeat(1, () => Version3MT.Run(options, cts.Token), nameof(Version3MT));
+	using var _ = new Benchmark("Copy");
+	
+	if (!Directory.Exists(options.SourceDirectory))
+	{
+		if (options.LogErrors) logger.Log($"Source directory '{options.SourceDirectory}' does not exist");
+		return;
+	}
+	Backup.Run(options, fileSystem, cts.Token);
 }

@@ -3,10 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using VersionedCopy.Interfaces;
 
 namespace VersionedCopy
 {
-	internal static class Version3MT
+	internal static class Backup
 	{
 		/// <summary>
 		/// optimize common update case: assume two directory structures are very similar
@@ -15,11 +16,13 @@ namespace VersionedCopy
 		/// </summary>
 		/// <param name="options"></param>
 		/// <param name="token"><see cref="CancellationToken"/></param>
-		internal static void Run(Options options, CancellationToken token)
+		internal static void Run(IOptions options, IFileSystem fileSystem, CancellationToken token)
 		{
 			var src = options.SourceDirectory;
 			var dst = options.DestinationDirectory;
 			var oldFilesFolder = options.OldFilesFolder;
+
+			fileSystem.CreateDirectory(dst);
 
 			var srcDirs = Task.Factory.StartNew(src.EnumerateDirsRecursive()
 				.Ignore(options.IgnoreDirectories).ToArray, token);
@@ -38,20 +41,20 @@ namespace VersionedCopy
 			foreach (var subDir in newDirs)
 			{
 				if (token.IsCancellationRequested) return;
-				FileSystem.CreateDirectory(dst + subDir);
+				fileSystem.CreateDirectory(dst + subDir);
 			}
 
 			// find dirs in dst, but not in src
 			var dirsToMove = dstDirsRelative.Where(dstDir => !srcDirsRelative.Contains(dstDir));
 
-			// make sure enumeration task have ended before changing directories and files
-			Task.WaitAll(new[] { srcFilesRelative, dstFilesRelative }, token);
+			// make sure dst enumeration task has ended before changing directories and files
+			dstFilesRelative.Wait(token);
 
 			// move away old directories
 			foreach (var subDir in dirsToMove)
 			{
 				if (token.IsCancellationRequested) return;
-				if (Directory.Exists(dst + subDir)) FileSystem.Move(dst + subDir, oldFilesFolder + subDir);
+				if (Directory.Exists(dst + subDir)) fileSystem.MoveDirectory(dst + subDir, oldFilesFolder + subDir);
 			}
 			// find files in dst, but not in src
 			var filesToMove = dstFilesRelative.Result.Where(dstFileRelative => !srcFilesRelative.Result.Contains(dstFileRelative));
@@ -59,13 +62,13 @@ namespace VersionedCopy
 			{
 				if (token.IsCancellationRequested) return;
 				// move deleted to oldFilesFolder
-				if (File.Exists(dst + fileName)) FileSystem.Move(dst + fileName, oldFilesFolder + fileName);
+				if (File.Exists(dst + fileName)) fileSystem.MoveFile(dst + fileName, oldFilesFolder + fileName);
 			}
 
-			CopyParallel(src, dst, oldFilesFolder, srcFilesRelative.Result, dstFilesRelative.Result, token);
+			CopyParallel(fileSystem, src, dst, oldFilesFolder, srcFilesRelative.Result, dstFilesRelative.Result, token);
 		}
 
-		private static void CopyParallel(string src, string dst, string oldFilesFolder, IEnumerable<string> srcFilesRelative, HashSet<string> dstFilesRelative, CancellationToken token)
+		private static void CopyParallel(IFileSystem fileSystem, string src, string dst, string oldFilesFolder, IEnumerable<string> srcFilesRelative, HashSet<string> dstFilesRelative, CancellationToken token)
 		{
 			Parallel.ForEach(srcFilesRelative, fileName =>
 			{
@@ -74,22 +77,22 @@ namespace VersionedCopy
 				var dstFilePath = dst + fileName;
 				if (dstFilesRelative.Contains(fileName))
 				{
-					var srcFileInfo = FileSystem.GetFileInfo(srcFilePath);
+					var srcFileInfo = fileSystem.GetFileInfo(srcFilePath);
 					if (srcFileInfo is null) return;
-					var dstFileInfo = FileSystem.GetFileInfo(dstFilePath);
+					var dstFileInfo = fileSystem.GetFileInfo(dstFilePath);
 					if (dstFileInfo is null) return;
 					if (srcFileInfo.LastWriteTimeUtc != dstFileInfo.LastWriteTimeUtc || srcFileInfo.Length != dstFileInfo.Length)
 					{
 						// move old to oldFilesFolder
-						FileSystem.Move(dstFilePath, oldFilesFolder + fileName);
+						fileSystem.MoveFile(dstFilePath, oldFilesFolder + fileName);
 						// copy new to dst
-						FileSystem.Copy(srcFilePath, dstFilePath);
+						fileSystem.Copy(srcFilePath, dstFilePath);
 					}
 				}
 				else
 				{
 					// copy new to dst
-					FileSystem.Copy(srcFilePath, dstFilePath);
+					fileSystem.Copy(srcFilePath, dstFilePath);
 				}
 			});
 		}
