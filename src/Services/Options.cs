@@ -12,7 +12,7 @@ namespace VersionedCopy.Services
 	internal class Options : IOptions
 	{
 		public Options(string sourceDirectory, string destinationDirectory
-			, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, bool logIgnoreOperations, bool logIgnoreErrors)
+			, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, bool logIgnoreOperations, bool logIgnoreErrors, bool dryRun)
 		{
 			if (sourceDirectory is null) return;
 			if (destinationDirectory is null) return;
@@ -20,10 +20,11 @@ namespace VersionedCopy.Services
 			SourceDirectory = Path.GetFullPath(sourceDirectory).IncludeTrailingPathDelimiter();
 			DestinationDirectory = Path.GetFullPath(destinationDirectory).IncludeTrailingPathDelimiter();
 			OldFilesFolder = $"{DestinationDirectory[0..^1]}-{DateTime.Now:yyyy-MM-dd_HHmmss}{Path.DirectorySeparatorChar}";
-			IgnoreDirectories = (ignoreDirectories ?? throw new ArgumentNullException(nameof(ignoreDirectories))).Select(dir => dir.Normalize());
-			IgnoreFiles = (ignoreFiles ?? throw new ArgumentNullException(nameof(ignoreFiles))).Select(file => file.Normalize());
+			IgnoreDirectories = (ignoreDirectories ?? throw new ArgumentNullException(nameof(ignoreDirectories))).Select(dir => dir.NormalizePathDelimiter().IncludeTrailingPathDelimiter());
+			IgnoreFiles = (ignoreFiles ?? throw new ArgumentNullException(nameof(ignoreFiles))).Select(file => file.NormalizePathDelimiter());
 			LogIgnoreOperations = logIgnoreOperations;
 			LogIgnoreErrors = logIgnoreErrors;
+			DryRun = dryRun;
 		}
 
 		[Value(0, Required = true, HelpText = "The source directory of the to copy operation.")]
@@ -43,6 +44,9 @@ namespace VersionedCopy.Services
 
 		[Option(longName: "logIgnoreErrors", Default = false, Required = false, HelpText = "Log no errors.")]
 		public bool LogIgnoreErrors { get; }
+
+		[Option(longName: "dryRun", Default = false, Required = false, HelpText = "Only list operations. Do not change file system.")]
+		public bool DryRun { get; }
 
 		public string OldFilesFolder { get; } = "";
 

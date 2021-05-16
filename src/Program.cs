@@ -14,11 +14,17 @@ void Run(IOptions options)
 {
 	// create services
 	ILogger logger = new Logger();
-	IFileSystem fileSystem = new FileSystem(logger, options.LogErrors);
+	IFileSystem fileSystem = options.DryRun ? new NullFileSystem() : new FileSystem(logger, options.LogErrors);
 	var cts = new CancellationTokenSource();
-	Console.CancelKeyPress += (_, _) => cts.Cancel();
+	Console.CancelKeyPress += (_, _) =>
+	{
+		logger.Log("CANCEL received - stopping opperations!");
+		cts.Cancel();
+	};
+#if DEBUG
 	using var _ = new Benchmark("Copy");
-	
+#endif
+
 	if (!Directory.Exists(options.SourceDirectory))
 	{
 		if (options.LogErrors) logger.Log($"Source directory '{options.SourceDirectory}' does not exist");

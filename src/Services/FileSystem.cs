@@ -25,19 +25,6 @@ namespace VersionedCopy.Services
 
 		public void CreateDirectory(string path) => LogCatch(() => Directory.CreateDirectory(path));
 
-		public FileInfo? GetFileInfo(string path)
-		{
-			try
-			{
-				return new FileInfo(path);
-			}
-			catch (SystemException e)
-			{
-				if (LogErrors) Logger.Log(e.Message);
-				return null;
-			}
-		}
-
 		public void MoveDirectory(string source, string destination)
 		{
 			LogCatch(() =>

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -19,7 +20,28 @@ namespace VersionedCopy
 		/// <param name="token"><see cref="CancellationToken"/></param>
 		internal static void Run(ILogger logger, IOptions options, IFileSystem fileSystem, CancellationToken token)
 		{
-			var report = new List<string>();
+			FileInfo? GetFileInfo(string path)
+			{
+				try
+				{
+					return new FileInfo(path);
+				}
+				catch (SystemException e)
+				{
+					if (options.LogErrors) logger.Log(e.Message);
+					return null;
+				}
+			}
+			void LogOperation(string message)
+			{
+				if (options.LogOperations) logger.Log(message);
+			}
+
+			List<string> report = new();
+			void Report(string message)
+			{
+				if (!options.DryRun) report.Add(message);
+			}
 			var src = options.SourceDirectory;
 			var dst = options.DestinationDirectory;
 			var oldFilesFolder = options.OldFilesFolder;
@@ -27,16 +49,17 @@ namespace VersionedCopy
 			fileSystem.CreateDirectory(dst);
 
 			var srcDirs = Task.Factory.StartNew(src.EnumerateDirsRecursive()
-				.IgnoreDirs(options.IgnoreDirectories).ToArray, token);
+				.Ignore(options.IgnoreDirectories).ToArray, token);
 			var dstDirs = Task.Factory.StartNew(dst.EnumerateDirsRecursive().ToArray, token);
 
 			var srcFilesRelative = Task.Factory.StartNew(() 
-				=> srcDirs.Result.EnumerateFiles().ToRelative(src), token);
+				=> srcDirs.Result.EnumerateFiles().ToRelative(src)
+				.Ignore(options.IgnoreFiles).ToHashSet(), token);
 			var dstFilesRelative = Task.Factory.StartNew(() 
-				=> dstDirs.Result.EnumerateFiles().ToRelative(dst), token);
+				=> dstDirs.Result.EnumerateFiles().ToRelative(dst).ToHashSet(), token);
 
-			var srcDirsRelative = srcDirs.Result.ToRelative(src);
-			var dstDirsRelative = dstDirs.Result.ToRelative(dst);
+			var srcDirsRelative = srcDirs.Result.ToRelative(src).ToHashSet();
+			var dstDirsRelative = dstDirs.Result.ToRelative(dst).ToHashSet();
 
 			//create missing directories in dst
 			var newDirs = srcDirsRelative.Where(srcDir => !dstDirsRelative.Contains(srcDir));
@@ -56,13 +79,13 @@ namespace VersionedCopy
 			foreach (var subDir in dirsToMove)
 			{
 				if (token.IsCancellationRequested) return;
-				string oldSubDir = dst + subDir;
-				if (Directory.Exists(oldSubDir))
+				string moveAwaySubDir = dst + subDir;
+				if (Directory.Exists(moveAwaySubDir))
 				{
 					string destination = oldFilesFolder + subDir;
-					fileSystem.MoveDirectory(oldSubDir, destination);
-					if (options.LogOperations) logger.Log($"Moving old directory '{subDir}' to {oldFilesFolder}");
-					report.Add($"Old directory '{subDir}'");
+					fileSystem.MoveDirectory(moveAwaySubDir, destination);
+					LogOperation($"Moving old directory '{subDir}' to {oldFilesFolder}");
+					Report($"Old directory '{subDir}'");
 				}
 			}
 			// find files in dst, but not in src
@@ -71,13 +94,13 @@ namespace VersionedCopy
 			{
 				if (token.IsCancellationRequested) return;
 				// move deleted to oldFilesFolder
-				string oldFileName = dst + fileName;
-				if (File.Exists(oldFileName))
+				string moveAwayFileName = dst + fileName;
+				if (File.Exists(moveAwayFileName))
 				{
 					string destination = oldFilesFolder + fileName;
-					fileSystem.MoveFile(oldFileName, destination);
-					if (options.LogOperations) logger.Log($"Moving deleted file '{fileName}' to '{oldFilesFolder}'");
-					report.Add($"Deleted file '{fileName}'");
+					fileSystem.MoveFile(moveAwayFileName, destination);
+					LogOperation($"Moving deleted file '{fileName}' to '{oldFilesFolder}'");
+					Report($"Deleted file '{fileName}'");
 				}
 			}
 
@@ -88,26 +111,27 @@ namespace VersionedCopy
 				var dstFilePath = dst + fileName;
 				if (dstFilesRelative.Result.Contains(fileName))
 				{
-					var srcFileInfo = fileSystem.GetFileInfo(srcFilePath);
+					var srcFileInfo = GetFileInfo(srcFilePath);
 					if (srcFileInfo is null) return;
-					var dstFileInfo = fileSystem.GetFileInfo(dstFilePath);
+					var dstFileInfo = GetFileInfo(dstFilePath);
 					if (dstFileInfo is null) return;
-					if (srcFileInfo.LastWriteTimeUtc != dstFileInfo.LastWriteTimeUtc || srcFileInfo.Length != dstFileInfo.Length)
+					TimeSpan writeDiff = srcFileInfo.LastWriteTimeUtc.Subtract(dstFileInfo.LastWriteTimeUtc);
+					if (Math.Abs(writeDiff.TotalSeconds) > 5 || srcFileInfo.Length != dstFileInfo.Length)
 					{
 						// move old to oldFilesFolder
 						fileSystem.MoveFile(dstFilePath, oldFilesFolder + fileName);
-						if (options.LogOperations) logger.Log($"Moving old version of file '{fileName}' to '{oldFilesFolder}'");
-						report.Add($"Old verion of file '{fileName}'");
+						LogOperation($"Moving old version of file '{fileName}' to '{oldFilesFolder}'");
+						Report($"Old verion of file '{fileName}'");
 						// copy new to dst
 						fileSystem.Copy(srcFilePath, dstFilePath);
-						if (options.LogOperations) logger.Log($"Copy new version of file '{fileName}' to '{dst}'");
+						LogOperation($"Copy new version of file '{fileName}' to '{dst}'");
 					}
 				}
 				else
 				{
 					// copy new to dst
 					fileSystem.Copy(srcFilePath, dstFilePath);
-					if (options.LogOperations) logger.Log($"Copy new file '{fileName}' to '{dst}'");
+					LogOperation($"Copy new file '{fileName}' to '{dst}'");
 				}
 			});
 			if(0 < report.Count) File.WriteAllLines(oldFilesFolder + "report.txt", report);

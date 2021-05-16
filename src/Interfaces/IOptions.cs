@@ -11,5 +11,6 @@ namespace VersionedCopy.Interfaces
 		string OldFilesFolder { get; }
 		bool LogErrors { get; }
 		bool LogOperations { get; }
+		bool DryRun { get; }
 	}
 }

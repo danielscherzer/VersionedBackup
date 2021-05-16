@@ -28,43 +28,21 @@ namespace VersionedCopy.PathHelper
 			from file in Directory.EnumerateFiles(subDir)
 			select file;
 
-		public static IEnumerable<string> IgnoreDirs(this IEnumerable<string> paths, IEnumerable<string> ignorePaths)
+		public static IEnumerable<string> Ignore(this IEnumerable<string> paths, IEnumerable<string> ignorePaths)
 		{
-			List<string> absoluteIgnorePaths = new();
-			List<string> relativeIgnorePaths = new();
-			foreach (var ignorePath in ignorePaths)
-			{
-				if (ignorePath.StartsWith(Path.DirectorySeparatorChar))
-				{
-					absoluteIgnorePaths.Add(ignorePath.IncludeTrailingPathDelimiter());
-				}
-				else
-				{
-					relativeIgnorePaths.Add((Path.DirectorySeparatorChar + ignorePath).IncludeTrailingPathDelimiter());
-				}
-			}
+			var regexIgnorePaths = ignorePaths.Select(ignorePath
+				=> new Regex(ignorePath.WildcardToRegex(), RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled))
+				.ToList();
 
-			bool Accept(string path)
-			{
-				foreach (var ignorePath in absoluteIgnorePaths)
-				{
-					if (path.StartsWith(ignorePath)) return false;
-				}
-				foreach (var ignorePath in relativeIgnorePaths)
-				{
-					if (path.Contains(ignorePath)) return false;
-				}
-				return true;
-			}
-			return paths.Where(path => Accept(path));
+			return paths.Where(path => !regexIgnorePaths.Any(regex => regex.IsMatch(path)));
 		}
 
 		public static string IncludeTrailingPathDelimiter(this string path) => Path.EndsInDirectorySeparator(path) ? path : path + Path.DirectorySeparatorChar;
 
 		public static string NormalizePathDelimiter(this string path) => path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
 
-		public static HashSet<string> ToRelative(this IEnumerable<string> paths, string prefix)
-			=> paths.Select(path => path[prefix.Length..]).ToHashSet();
+		public static IEnumerable<string> ToRelative(this IEnumerable<string> paths, string prefix)
+			=> paths.Select(path => path[prefix.Length..]);
 
 		public static string WildcardToRegex(this string pattern)
 		{
