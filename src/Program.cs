@@ -14,7 +14,7 @@ void Run(IOptions options)
 {
 	// create services
 	ILogger logger = new Logger();
-	IFileSystem fileSystem = new FileSystem(logger, options.LogOperations, options.LogErrors);
+	IFileSystem fileSystem = new FileSystem(logger, options.LogErrors);
 	var cts = new CancellationTokenSource();
 	Console.CancelKeyPress += (_, _) => cts.Cancel();
 	using var _ = new Benchmark("Copy");
@@ -24,5 +24,5 @@ void Run(IOptions options)
 		if (options.LogErrors) logger.Log($"Source directory '{options.SourceDirectory}' does not exist");
 		return;
 	}
-	Backup.Run(options, fileSystem, cts.Token);
+	Backup.Run(logger, options, fileSystem, cts.Token);
 }

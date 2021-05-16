@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using VersionedCopy.Interfaces;
+using VersionedCopy.PathHelper;
 
 namespace VersionedCopy
 {
@@ -16,8 +17,9 @@ namespace VersionedCopy
 		/// </summary>
 		/// <param name="options"></param>
 		/// <param name="token"><see cref="CancellationToken"/></param>
-		internal static void Run(IOptions options, IFileSystem fileSystem, CancellationToken token)
+		internal static void Run(ILogger logger, IOptions options, IFileSystem fileSystem, CancellationToken token)
 		{
+			var report = new List<string>();
 			var src = options.SourceDirectory;
 			var dst = options.DestinationDirectory;
 			var oldFilesFolder = options.OldFilesFolder;
@@ -25,7 +27,7 @@ namespace VersionedCopy
 			fileSystem.CreateDirectory(dst);
 
 			var srcDirs = Task.Factory.StartNew(src.EnumerateDirsRecursive()
-				.Ignore(options.IgnoreDirectories).ToArray, token);
+				.IgnoreDirs(options.IgnoreDirectories).ToArray, token);
 			var dstDirs = Task.Factory.StartNew(dst.EnumerateDirsRecursive().ToArray, token);
 
 			var srcFilesRelative = Task.Factory.StartNew(() 
@@ -54,7 +56,14 @@ namespace VersionedCopy
 			foreach (var subDir in dirsToMove)
 			{
 				if (token.IsCancellationRequested) return;
-				if (Directory.Exists(dst + subDir)) fileSystem.MoveDirectory(dst + subDir, oldFilesFolder + subDir);
+				string oldSubDir = dst + subDir;
+				if (Directory.Exists(oldSubDir))
+				{
+					string destination = oldFilesFolder + subDir;
+					fileSystem.MoveDirectory(oldSubDir, destination);
+					if (options.LogOperations) logger.Log($"Moving old directory '{subDir}' to {oldFilesFolder}");
+					report.Add($"Old directory '{subDir}'");
+				}
 			}
 			// find files in dst, but not in src
 			var filesToMove = dstFilesRelative.Result.Where(dstFileRelative => !srcFilesRelative.Result.Contains(dstFileRelative));
@@ -62,20 +71,22 @@ namespace VersionedCopy
 			{
 				if (token.IsCancellationRequested) return;
 				// move deleted to oldFilesFolder
-				if (File.Exists(dst + fileName)) fileSystem.MoveFile(dst + fileName, oldFilesFolder + fileName);
+				string oldFileName = dst + fileName;
+				if (File.Exists(oldFileName))
+				{
+					string destination = oldFilesFolder + fileName;
+					fileSystem.MoveFile(oldFileName, destination);
+					if (options.LogOperations) logger.Log($"Moving deleted file '{fileName}' to '{oldFilesFolder}'");
+					report.Add($"Deleted file '{fileName}'");
+				}
 			}
 
-			CopyParallel(fileSystem, src, dst, oldFilesFolder, srcFilesRelative.Result, dstFilesRelative.Result, token);
-		}
-
-		private static void CopyParallel(IFileSystem fileSystem, string src, string dst, string oldFilesFolder, IEnumerable<string> srcFilesRelative, HashSet<string> dstFilesRelative, CancellationToken token)
-		{
-			Parallel.ForEach(srcFilesRelative, fileName =>
+			Parallel.ForEach(srcFilesRelative.Result, fileName =>
 			{
 				if (token.IsCancellationRequested) return;
 				var srcFilePath = src + fileName;
 				var dstFilePath = dst + fileName;
-				if (dstFilesRelative.Contains(fileName))
+				if (dstFilesRelative.Result.Contains(fileName))
 				{
 					var srcFileInfo = fileSystem.GetFileInfo(srcFilePath);
 					if (srcFileInfo is null) return;
@@ -85,16 +96,21 @@ namespace VersionedCopy
 					{
 						// move old to oldFilesFolder
 						fileSystem.MoveFile(dstFilePath, oldFilesFolder + fileName);
+						if (options.LogOperations) logger.Log($"Moving old version of file '{fileName}' to '{oldFilesFolder}'");
+						report.Add($"Old verion of file '{fileName}'");
 						// copy new to dst
 						fileSystem.Copy(srcFilePath, dstFilePath);
+						if (options.LogOperations) logger.Log($"Copy new version of file '{fileName}' to '{dst}'");
 					}
 				}
 				else
 				{
 					// copy new to dst
 					fileSystem.Copy(srcFilePath, dstFilePath);
+					if (options.LogOperations) logger.Log($"Copy new file '{fileName}' to '{dst}'");
 				}
 			});
+			if(0 < report.Count) File.WriteAllLines(oldFilesFolder + "report.txt", report);
 		}
 	}
 }

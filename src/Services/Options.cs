@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using VersionedCopy.Interfaces;
+using VersionedCopy.PathHelper;
 
 namespace VersionedCopy.Services
 {
@@ -19,8 +20,8 @@ namespace VersionedCopy.Services
 			SourceDirectory = Path.GetFullPath(sourceDirectory).IncludeTrailingPathDelimiter();
 			DestinationDirectory = Path.GetFullPath(destinationDirectory).IncludeTrailingPathDelimiter();
 			OldFilesFolder = $"{DestinationDirectory[0..^1]}-{DateTime.Now:yyyy-MM-dd_HHmmss}{Path.DirectorySeparatorChar}";
-			IgnoreDirectories = ignoreDirectories ?? throw new ArgumentNullException(nameof(ignoreDirectories));
-			IgnoreFiles = ignoreFiles ?? throw new ArgumentNullException(nameof(ignoreFiles));
+			IgnoreDirectories = (ignoreDirectories ?? throw new ArgumentNullException(nameof(ignoreDirectories))).Select(dir => dir.Normalize());
+			IgnoreFiles = (ignoreFiles ?? throw new ArgumentNullException(nameof(ignoreFiles))).Select(file => file.Normalize());
 			LogIgnoreOperations = logIgnoreOperations;
 			LogIgnoreErrors = logIgnoreErrors;
 		}

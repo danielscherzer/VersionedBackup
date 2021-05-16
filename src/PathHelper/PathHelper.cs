@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
-namespace VersionedCopy
+namespace VersionedCopy.PathHelper
 {
-	internal static class BackupOperations
+	public static class PathHelper
 	{
 		//TODO: make multi threaded
 		internal static IEnumerable<string> EnumerateDirsRecursive(this string dir)
@@ -25,9 +26,9 @@ namespace VersionedCopy
 		internal static IEnumerable<string> EnumerateFiles(this IEnumerable<string> dirs) =>
 			from subDir in dirs.AsParallel()
 			from file in Directory.EnumerateFiles(subDir)
-			select file; 
-		
-		public static IEnumerable<string> Ignore(this IEnumerable<string> paths, IEnumerable<string> ignorePaths)
+			select file;
+
+		public static IEnumerable<string> IgnoreDirs(this IEnumerable<string> paths, IEnumerable<string> ignorePaths)
 		{
 			List<string> absoluteIgnorePaths = new();
 			List<string> relativeIgnorePaths = new();
@@ -60,7 +61,23 @@ namespace VersionedCopy
 
 		public static string IncludeTrailingPathDelimiter(this string path) => Path.EndsInDirectorySeparator(path) ? path : path + Path.DirectorySeparatorChar;
 
+		public static string NormalizePathDelimiter(this string path) => path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+
 		public static HashSet<string> ToRelative(this IEnumerable<string> paths, string prefix)
 			=> paths.Select(path => path[prefix.Length..]).ToHashSet();
+
+		public static string WildcardToRegex(this string pattern)
+		{
+			var directorySeparator = Regex.Escape(Path.DirectorySeparatorChar.ToString());
+			var exceptDirectorySeparator = $"[^{directorySeparator}]";
+			var hasWildcard = pattern.Contains('*') || pattern.Contains('?');
+			var noWildcard = !hasWildcard ? directorySeparator : "";
+			var regexMiddle = Regex.Escape(pattern)
+				.Replace("\\*", exceptDirectorySeparator + '*')
+				.Replace("\\?", exceptDirectorySeparator);
+			var startAnchor = pattern.StartsWith(Path.DirectorySeparatorChar) ? "^" : "";
+			var endAnchor = pattern.EndsWith(Path.DirectorySeparatorChar) ? "" : "$";
+			return $"{startAnchor}{noWildcard}{regexMiddle}{endAnchor}";
+		}
 	}
 }

@@ -6,15 +6,13 @@ namespace VersionedCopy.Services
 {
 	internal class FileSystem : IFileSystem
 	{
-		public FileSystem(ILogger logger, bool logOperations, bool logErrors)
+		public FileSystem(ILogger logger, bool logErrors)
 		{
 			Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-			LogOperations = logOperations;
 			LogErrors = logErrors;
 		}
 
 		public ILogger Logger { get; }
-		public bool LogOperations { get; }
 		public bool LogErrors { get; }
 
 		public void Copy(string srcFilePath, string dstFilePath)
@@ -22,7 +20,6 @@ namespace VersionedCopy.Services
 			LogCatch(() =>
 			{
 				File.Copy(srcFilePath, dstFilePath);
-				if (LogOperations) Logger.Log($"Copy file '{srcFilePath}' => '{dstFilePath}'");
 			});
 		}
 
@@ -47,7 +44,6 @@ namespace VersionedCopy.Services
 			{
 				Directory.CreateDirectory(destination + "..");
 				Directory.Move(source, destination);
-				if (LogOperations) Logger.Log($"Moving directory '{source}' => '{destination}'");
 			});
 		}
 
@@ -63,7 +59,6 @@ namespace VersionedCopy.Services
 				}
 				Directory.CreateDirectory(parentDir);
 				File.Move(source, destination);
-				if (LogOperations) Logger.Log($"Moving file '{source}' => '{destination}'");
 			});
 		}
 
