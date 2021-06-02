@@ -15,6 +15,10 @@ namespace VersionedCopy.PathHelper.Tests
 		[DataRow(@"*.log\", @"\.log\sadf\autoexec\")]
 		[DataRow(@"*.log\", @"\qwert.log\sadf\autoexec\")]
 		[DataRow(@"*.log\", @"\qwert.logy\sadf\autoexec\", false)]
+		[DataRow(@"\*.log\", @"\autoexec.log\")]
+		[DataRow(@"\.vs*\", @"\.vscode\")]
+		[DataRow(@"\?\.vs*\", @"\w\.vscode\")]
+		[DataRow(@"\vs\", @"\vs\dsfgh\", false)]
 		// files
 		[DataRow(@"log", @"\log")]
 		[DataRow(@"log", @"\lag", false)]
@@ -24,6 +28,7 @@ namespace VersionedCopy.PathHelper.Tests
 		[DataRow(@"log", @"\alog", false)]
 		[DataRow(@"log", @"\loglog", false)]
 		[DataRow(@"*.log", @"\autoexec.log")]
+		[DataRow(@"*.log", @"\a\ghj\autoexec.log")]
 		[DataRow(@"a*.log", @"\butoexec.log", false)]
 		[DataRow(@"b*.log", @"\butoexec.log")]
 		[DataRow(@"*.lo", @"\autoexec.log", false)]

@@ -12,8 +12,11 @@ Parser.Default.ParseArguments<Options>(args).WithParsed(options => Run(options))
 
 void Run(IOptions options)
 {
-	// create services
+// create services
 	ILogger logger = new Logger();
+//	var updater = new Update("danielscherzer", );
+	//var currentVersion = Assembly.GetEntryAssembly().GetName().Version;
+
 	IFileSystem fileSystem = options.DryRun ? new NullFileSystem() : new FileSystem(logger, options.LogErrors);
 	var cts = new CancellationTokenSource();
 	Console.CancelKeyPress += (_, _) =>

@@ -2,7 +2,7 @@
   "profiles": {
     "VersionedBackup": {
       "commandName": "Project",
-      "commandLineArgs": "d:\\daten e:\\daten --ignoreDirectories .vs --ignoreFiles desktop.ini ._sync_* .owncloudsync.log"
+      "commandLineArgs": "d:\\daten d:\\temp\\daten --ignoreDirectories .vs ConcurrencyVisualizer --ignoreFiles desktop.ini ._sync_* .owncloudsync.log"
     }
   }
 }

@@ -42,6 +42,7 @@ namespace VersionedCopy
 			{
 				if (!options.DryRun) report.Add(message);
 			}
+
 			var src = options.SourceDirectory;
 			var dst = options.DestinationDirectory;
 			var oldFilesFolder = options.OldFilesFolder;
@@ -69,7 +70,7 @@ namespace VersionedCopy
 				fileSystem.CreateDirectory(dst + subDir);
 			}
 
-			// find dirs in dst, but not in src
+			// find directories in dst, but not in src
 			var dirsToMove = dstDirsRelative.Where(dstDir => !srcDirsRelative.Contains(dstDir));
 
 			// make sure dst enumeration task has ended before changing directories and files
@@ -83,8 +84,8 @@ namespace VersionedCopy
 				if (Directory.Exists(moveAwaySubDir))
 				{
 					string destination = oldFilesFolder + subDir;
-					fileSystem.MoveDirectory(moveAwaySubDir, destination);
 					LogOperation($"Moving old directory '{subDir}' to {oldFilesFolder}");
+					fileSystem.MoveDirectory(moveAwaySubDir, destination);
 					Report($"Old directory '{subDir}'");
 				}
 			}
@@ -98,8 +99,8 @@ namespace VersionedCopy
 				if (File.Exists(moveAwayFileName))
 				{
 					string destination = oldFilesFolder + fileName;
-					fileSystem.MoveFile(moveAwayFileName, destination);
 					LogOperation($"Moving deleted file '{fileName}' to '{oldFilesFolder}'");
+					fileSystem.MoveFile(moveAwayFileName, destination);
 					Report($"Deleted file '{fileName}'");
 				}
 			}
@@ -119,19 +120,19 @@ namespace VersionedCopy
 					if (Math.Abs(writeDiff.TotalSeconds) > 5 || srcFileInfo.Length != dstFileInfo.Length)
 					{
 						// move old to oldFilesFolder
-						fileSystem.MoveFile(dstFilePath, oldFilesFolder + fileName);
 						LogOperation($"Moving old version of file '{fileName}' to '{oldFilesFolder}'");
+						fileSystem.MoveFile(dstFilePath, oldFilesFolder + fileName);
 						Report($"Old verion of file '{fileName}'");
 						// copy new to dst
-						fileSystem.Copy(srcFilePath, dstFilePath);
 						LogOperation($"Copy new version of file '{fileName}' to '{dst}'");
+						fileSystem.Copy(srcFilePath, dstFilePath);
 					}
 				}
 				else
 				{
 					// copy new to dst
-					fileSystem.Copy(srcFilePath, dstFilePath);
 					LogOperation($"Copy new file '{fileName}' to '{dst}'");
+					fileSystem.Copy(srcFilePath, dstFilePath);
 				}
 			});
 			if(0 < report.Count) File.WriteAllLines(oldFilesFolder + "report.txt", report);
