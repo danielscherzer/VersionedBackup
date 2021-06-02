@@ -1,8 +1,10 @@
 //TODO: if program stopped last saved files is invalid
 
+using AutoUpdateViaGitHubRelease;
 using CommandLine;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using VersionedCopy;
 using VersionedCopy.Interfaces;
@@ -14,8 +16,7 @@ void Run(IOptions options)
 {
 // create services
 	ILogger logger = new Logger();
-//	var updater = new Update("danielscherzer", );
-	//var currentVersion = Assembly.GetEntryAssembly().GetName().Version;
+	//var update = new Update("danielscherzer", nameof(VersionedCopy), Assembly.GetExecutingAssembly());
 
 	IFileSystem fileSystem = options.DryRun ? new NullFileSystem() : new FileSystem(logger, options.LogErrors);
 	var cts = new CancellationTokenSource();
@@ -34,4 +35,12 @@ void Run(IOptions options)
 		return;
 	}
 	Backup.Run(logger, options, fileSystem, cts.Token);
+	//if(update.Available)
+	//{
+	//	Console.Write("Update? (Y/N)");
+	//	if(ConsoleKey.Y == Console.ReadKey().Key)
+	//	{
+	//		update.Install();
+	//	}
+	//}
 }
