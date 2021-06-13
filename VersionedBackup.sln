@@ -2,9 +2,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VersionedCopy", "src\VersionedCopy.csproj", "{6683B90A-E2C9-41A4-A68B-251EE075E779}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VersionedBackup", "src\VersionedBackup.csproj", "{6683B90A-E2C9-41A4-A68B-251EE075E779}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VersionedCopyTests", "VersionedCopyTests\VersionedCopyTests.csproj", "{CB9ECA22-EEB2-438D-94A2-2AA5DDDB95F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VersionedBackupTests", "VersionedBackupTests\VersionedBackupTests.csproj", "{CB9ECA22-EEB2-438D-94A2-2AA5DDDB95F9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{98DE4E53-AAA6-4DD6-A484-5C83C3884C4E}"
 	ProjectSection(SolutionItems) = preProject
