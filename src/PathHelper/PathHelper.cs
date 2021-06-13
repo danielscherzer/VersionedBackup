@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace VersionedCopy.PathHelper
+namespace VersionedBackup.PathHelper
 {
 	public static class PathHelper
 	{

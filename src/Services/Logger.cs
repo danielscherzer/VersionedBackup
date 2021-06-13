@@ -1,7 +1,7 @@
 ﻿using System;
-using VersionedCopy.Interfaces;
+using VersionedBackup.Interfaces;
 
-namespace VersionedCopy.Services
+namespace VersionedBackup.Services
 {
 	internal class Logger : ILogger
 	{

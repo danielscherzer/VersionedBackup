@@ -3,10 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using VersionedCopy.Interfaces;
-using VersionedCopy.PathHelper;
+using VersionedBackup.Interfaces;
+using VersionedBackup.PathHelper;
 
-namespace VersionedCopy.Services
+namespace VersionedBackup.Services
 {
 	internal class Options : IOptions
 	{

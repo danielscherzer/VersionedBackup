@@ -6,18 +6,37 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Threading;
-using VersionedCopy;
-using VersionedCopy.Interfaces;
-using VersionedCopy.Services;
+using VersionedBackup;
+using VersionedBackup.Interfaces;
+using VersionedBackup.Services;
 
-Parser.Default.ParseArguments<Options>(args).WithParsed(options => Run(options));
+// create logger service
+ILogger logger = new VersionedBackup.Services.Logger();
+var assembly = Assembly.GetExecutingAssembly();
+var tempDir = Path.Combine(Path.GetTempPath(), nameof(VersionedBackup));
+Directory.CreateDirectory(tempDir);
+var updateArchive = Path.Combine(tempDir, "update.zip");
+var updateTask = UpdateTools.CheckDownloadNewVersionAsync("danielScherzer", "VersionedBackup"
+	, assembly.GetName().Version, updateArchive);
+var v = assembly.GetName().Version;
+Parser.Default.ParseArguments<Options>(args).WithParsed(Run);
+
+var updateAvailable = updateTask.Result;
+if (updateAvailable)
+{
+	Console.Write("Update? (Y/N)");
+	if (ConsoleKey.Y == Console.ReadKey().Key)
+	{
+		var installer = Path.Combine(tempDir, UpdateTools.DownloadExtractInstallerToAsync(tempDir).Result);
+		var destinationDir = Path.GetDirectoryName(assembly.Location);
+		UpdateTools.InstallAsync(installer, updateArchive, destinationDir);
+		Environment.Exit(0);
+	}
+}
 
 void Run(IOptions options)
 {
-// create services
-	ILogger logger = new Logger();
-	//var update = new Update("danielscherzer", nameof(VersionedCopy), Assembly.GetExecutingAssembly());
-
+	// create file sysem service
 	IFileSystem fileSystem = options.DryRun ? new NullFileSystem() : new FileSystem(logger, options.LogErrors);
 	var cts = new CancellationTokenSource();
 	Console.CancelKeyPress += (_, _) =>
@@ -35,12 +54,4 @@ void Run(IOptions options)
 		return;
 	}
 	Backup.Run(logger, options, fileSystem, cts.Token);
-	//if(update.Available)
-	//{
-	//	Console.Write("Update? (Y/N)");
-	//	if(ConsoleKey.Y == Console.ReadKey().Key)
-	//	{
-	//		update.Install();
-	//	}
-	//}
 }

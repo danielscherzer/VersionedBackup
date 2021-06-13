@@ -1,4 +1,4 @@
-﻿namespace VersionedCopy.Interfaces
+﻿namespace VersionedBackup.Interfaces
 {
 	internal interface IFileSystem
 	{

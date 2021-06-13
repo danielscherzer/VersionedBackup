@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using VersionedCopy.Interfaces;
-using VersionedCopy.PathHelper;
+using VersionedBackup.Interfaces;
+using VersionedBackup.PathHelper;
 
-namespace VersionedCopy
+namespace VersionedBackup
 {
 	internal static class Backup
 	{

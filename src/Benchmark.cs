@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace VersionedCopy
+namespace VersionedBackup
 {
 	class Benchmark : IDisposable
 	{
