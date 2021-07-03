@@ -21,17 +21,12 @@ var updateTask = UpdateTools.CheckDownloadNewVersionAsync("danielScherzer", "Ver
 var v = assembly.GetName().Version;
 Parser.Default.ParseArguments<Options>(args).WithParsed(Run);
 
-var updateAvailable = updateTask.Result;
-if (updateAvailable)
+if (await updateTask)
 {
-	Console.Write("Update? (Y/N)");
-	if (ConsoleKey.Y == Console.ReadKey().Key)
-	{
-		var installer = Path.Combine(tempDir, UpdateTools.DownloadExtractInstallerToAsync(tempDir).Result);
-		var destinationDir = Path.GetDirectoryName(assembly.Location);
-		UpdateTools.InstallAsync(installer, updateArchive, destinationDir);
-		Environment.Exit(0);
-	}
+	var installer = Path.Combine(tempDir, UpdateTools.DownloadExtractInstallerToAsync(tempDir).Result);
+	var destinationDir = Path.GetDirectoryName(assembly.Location);
+	UpdateTools.StartInstall(installer, updateArchive, destinationDir);
+	Environment.Exit(0);
 }
 
 void Run(IOptions options)
