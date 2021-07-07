@@ -12,6 +12,7 @@ using VersionedBackup.Services;
 
 // create logger service
 ILogger logger = new VersionedBackup.Services.Logger();
+#if !DEBUG
 var assembly = Assembly.GetExecutingAssembly();
 var tempDir = Path.Combine(Path.GetTempPath(), nameof(VersionedBackup));
 Directory.CreateDirectory(tempDir);
@@ -19,8 +20,10 @@ var updateArchive = Path.Combine(tempDir, "update.zip");
 var updateTask = UpdateTools.CheckDownloadNewVersionAsync("danielScherzer", "VersionedBackup"
 	, assembly.GetName().Version, updateArchive);
 var v = assembly.GetName().Version;
+#endif
 Parser.Default.ParseArguments<Options>(args).WithParsed(Run);
 
+#if !DEBUG
 if (await updateTask)
 {
 	var installer = Path.Combine(tempDir, UpdateTools.DownloadExtractInstallerToAsync(tempDir).Result);
@@ -28,6 +31,7 @@ if (await updateTask)
 	UpdateTools.StartInstall(installer, updateArchive, destinationDir);
 	Environment.Exit(0);
 }
+#endif
 
 void Run(IOptions options)
 {
