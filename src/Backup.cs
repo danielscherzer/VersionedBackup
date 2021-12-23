@@ -49,14 +49,14 @@ namespace VersionedBackup
 
 			fileSystem.CreateDirectory(dst);
 
-			var srcDirs = Task.Factory.StartNew(src.EnumerateDirsRecursive()
+			var srcDirs = Task.Run(src.EnumerateDirsRecursive()
 				.Ignore(options.IgnoreDirectories).ToArray, token);
-			var dstDirs = Task.Factory.StartNew(dst.EnumerateDirsRecursive().ToArray, token);
+			var dstDirs = Task.Run(dst.EnumerateDirsRecursive().ToArray, token);
 
-			var srcFilesRelative = Task.Factory.StartNew(() 
+			var srcFilesRelative = Task.Run(()
 				=> srcDirs.Result.EnumerateFiles().ToRelative(src)
 				.Ignore(options.IgnoreFiles).ToHashSet(), token);
-			var dstFilesRelative = Task.Factory.StartNew(() 
+			var dstFilesRelative = Task.Run(()
 				=> dstDirs.Result.EnumerateFiles().ToRelative(dst).ToHashSet(), token);
 
 			var srcDirsRelative = srcDirs.Result.ToRelative(src).ToHashSet();
@@ -105,37 +105,43 @@ namespace VersionedBackup
 				}
 			}
 
-			Parallel.ForEach(srcFilesRelative.Result, fileName =>
+			try
 			{
-				if (token.IsCancellationRequested) return;
-				var srcFilePath = src + fileName;
-				var dstFilePath = dst + fileName;
-				if (dstFilesRelative.Result.Contains(fileName))
+				Parallel.ForEach(srcFilesRelative.Result, new ParallelOptions { CancellationToken = token }, fileName =>
 				{
-					var srcFileInfo = GetFileInfo(srcFilePath);
-					if (srcFileInfo is null) return;
-					var dstFileInfo = GetFileInfo(dstFilePath);
-					if (dstFileInfo is null) return;
-					TimeSpan writeDiff = srcFileInfo.LastWriteTimeUtc.Subtract(dstFileInfo.LastWriteTimeUtc);
-					if (Math.Abs(writeDiff.TotalSeconds) > 5 || srcFileInfo.Length != dstFileInfo.Length)
+					var srcFilePath = src + fileName;
+					var dstFilePath = dst + fileName;
+					if (dstFilesRelative.Result.Contains(fileName))
 					{
-						// move old to oldFilesFolder
-						LogOperation($"Moving old version of file '{fileName}' to '{oldFilesFolder}'");
-						fileSystem.MoveFile(dstFilePath, oldFilesFolder + fileName);
-						Report($"Old verion of file '{fileName}'");
+						var srcFileInfo = GetFileInfo(srcFilePath);
+						if (srcFileInfo is null) return;
+						var dstFileInfo = GetFileInfo(dstFilePath);
+						if (dstFileInfo is null) return;
+						TimeSpan writeDiff = srcFileInfo.LastWriteTimeUtc.Subtract(dstFileInfo.LastWriteTimeUtc);
+						if (Math.Abs(writeDiff.TotalSeconds) > 5 || srcFileInfo.Length != dstFileInfo.Length)
+						{
+							// move old to oldFilesFolder
+							LogOperation($"Moving old version of file '{fileName}' to '{oldFilesFolder}'");
+							fileSystem.MoveFile(dstFilePath, oldFilesFolder + fileName);
+							Report($"Old verion of file '{fileName}'");
+							// copy new to dst
+							LogOperation($"Copy new version of file '{fileName}' to '{dst}'");
+							fileSystem.Copy(srcFilePath, dstFilePath);
+						}
+					}
+					else
+					{
 						// copy new to dst
-						LogOperation($"Copy new version of file '{fileName}' to '{dst}'");
+						LogOperation($"Copy new file '{fileName}' to '{dst}'");
 						fileSystem.Copy(srcFilePath, dstFilePath);
 					}
-				}
-				else
-				{
-					// copy new to dst
-					LogOperation($"Copy new file '{fileName}' to '{dst}'");
-					fileSystem.Copy(srcFilePath, dstFilePath);
-				}
-			});
-			if(0 < report.Count) File.WriteAllLines(oldFilesFolder + "report.txt", report);
+				});
+			}
+			catch (OperationCanceledException e)
+			{
+				LogOperation(e.Message);
+			}
+			if (0 < report.Count) File.WriteAllLines(oldFilesFolder + "report.txt", report);
 		}
 	}
 }

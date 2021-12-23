@@ -37,11 +37,12 @@ void Run(IOptions options)
 {
 	// create file sysem service
 	IFileSystem fileSystem = options.DryRun ? new NullFileSystem() : new FileSystem(logger, options.LogErrors);
-	var cts = new CancellationTokenSource();
-	Console.CancelKeyPress += (_, _) =>
+	using CancellationTokenSource cts = new();
+	Console.CancelKeyPress += (_, args) =>
 	{
 		logger.Log("CANCEL received - stopping opperations!");
 		cts.Cancel();
+		args.Cancel = true; // means to continue the process!
 	};
 #if DEBUG
 	using var _ = new Benchmark("Copy");
