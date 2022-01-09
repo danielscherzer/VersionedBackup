@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using VersionedBackup.Interfaces;
 using VersionedBackup.PathHelper;
+using VersionedBackup.Services;
 
 namespace VersionedBackup
 {
@@ -18,36 +17,12 @@ namespace VersionedBackup
 		/// </summary>
 		/// <param name="options"></param>
 		/// <param name="token"><see cref="CancellationToken"/></param>
-		internal static void Run(ILogger logger, IOptions options, IFileSystem fileSystem, CancellationToken token)
+		internal static void Run(IOptions options, FileOperation op, CancellationToken token)
 		{
-			FileInfo? GetFileInfo(string path)
-			{
-				try
-				{
-					return new FileInfo(path);
-				}
-				catch (SystemException e)
-				{
-					if (options.LogErrors) logger.Log(e.Message);
-					return null;
-				}
-			}
-			void LogOperation(string message)
-			{
-				if (options.LogOperations) logger.Log(message);
-			}
-
-			List<string> report = new();
-			void Report(string message)
-			{
-				if (!options.DryRun) report.Add(message);
-			}
-
 			var src = options.SourceDirectory;
 			var dst = options.DestinationDirectory;
-			var oldFilesFolder = options.OldFilesFolder;
 
-			fileSystem.CreateDirectory(dst);
+			op.CreateDirectory(dst);
 
 			var srcDirs = Task.Run(src.EnumerateDirsRecursive()
 				.Ignore(options.IgnoreDirectories).ToArray, token);
@@ -67,7 +42,7 @@ namespace VersionedBackup
 			foreach (var subDir in newDirs)
 			{
 				if (token.IsCancellationRequested) return;
-				fileSystem.CreateDirectory(dst + subDir);
+				op.CreateDirectory(dst + subDir);
 			}
 
 			// find directories in dst, but not in src
@@ -80,68 +55,33 @@ namespace VersionedBackup
 			foreach (var subDir in dirsToMove)
 			{
 				if (token.IsCancellationRequested) return;
-				string moveAwaySubDir = dst + subDir;
-				if (Directory.Exists(moveAwaySubDir))
-				{
-					string destination = oldFilesFolder + subDir;
-					LogOperation($"Moving old directory '{subDir}' to {oldFilesFolder}");
-					fileSystem.MoveDirectory(moveAwaySubDir, destination);
-					Report($"Old directory '{subDir}'");
-				}
+				op.MoveAwayOldDir(subDir);
 			}
 			// find files in dst, but not in src
 			var filesToMove = dstFilesRelative.Result.Where(dstFileRelative => !srcFilesRelative.Result.Contains(dstFileRelative));
 			foreach (var fileName in filesToMove)
 			{
 				if (token.IsCancellationRequested) return;
-				// move deleted to oldFilesFolder
-				string moveAwayFileName = dst + fileName;
-				if (File.Exists(moveAwayFileName))
-				{
-					string destination = oldFilesFolder + fileName;
-					LogOperation($"Moving deleted file '{fileName}' to '{oldFilesFolder}'");
-					fileSystem.MoveFile(moveAwayFileName, destination);
-					Report($"Deleted file '{fileName}'");
-				}
+				op.MoveAwayDeleted(fileName);
 			}
 
 			try
 			{
 				Parallel.ForEach(srcFilesRelative.Result, new ParallelOptions { CancellationToken = token }, fileName =>
 				{
-					var srcFilePath = src + fileName;
-					var dstFilePath = dst + fileName;
 					if (dstFilesRelative.Result.Contains(fileName))
 					{
-						var srcFileInfo = GetFileInfo(srcFilePath);
-						if (srcFileInfo is null) return;
-						var dstFileInfo = GetFileInfo(dstFilePath);
-						if (dstFileInfo is null) return;
-						TimeSpan writeDiff = srcFileInfo.LastWriteTimeUtc.Subtract(dstFileInfo.LastWriteTimeUtc);
-						if (Math.Abs(writeDiff.TotalSeconds) > 5 || srcFileInfo.Length != dstFileInfo.Length)
-						{
-							// move old to oldFilesFolder
-							LogOperation($"Moving old version of file '{fileName}' to '{oldFilesFolder}'");
-							fileSystem.MoveFile(dstFilePath, oldFilesFolder + fileName);
-							Report($"Old verion of file '{fileName}'");
-							// copy new to dst
-							LogOperation($"Copy new version of file '{fileName}' to '{dst}'");
-							fileSystem.Copy(srcFilePath, dstFilePath);
-						}
+						op.UpdateFile(fileName);
 					}
 					else
 					{
-						// copy new to dst
-						LogOperation($"Copy new file '{fileName}' to '{dst}'");
-						fileSystem.Copy(srcFilePath, dstFilePath);
+						op.CopyNewFile(fileName);
 					}
 				});
 			}
-			catch (OperationCanceledException e)
+			catch (OperationCanceledException)
 			{
-				LogOperation(e.Message);
 			}
-			if (0 < report.Count) File.WriteAllLines(oldFilesFolder + "report.txt", report);
 		}
 	}
 }

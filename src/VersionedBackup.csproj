@@ -13,6 +13,7 @@
   <ItemGroup>
     <PackageReference Include="AutoUpdateViaGitHubRelease" Version="0.1.51" />
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
 </Project>

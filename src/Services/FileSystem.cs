@@ -12,8 +12,8 @@ namespace VersionedBackup.Services
 			LogErrors = logErrors;
 		}
 
-		public ILogger Logger { get; }
-		public bool LogErrors { get; }
+		private ILogger Logger { get; }
+		private bool LogErrors { get; }
 
 		public void Copy(string srcFilePath, string dstFilePath)
 		{

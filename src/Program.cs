@@ -35,17 +35,15 @@ if (await updateTask)
 
 void Run(IOptions options)
 {
-	// create file sysem service
-	IFileSystem fileSystem = options.DryRun ? new NullFileSystem() : new FileSystem(logger, options.LogErrors);
 	using CancellationTokenSource cts = new();
 	Console.CancelKeyPress += (_, args) =>
 	{
 		logger.Log("CANCEL received - stopping opperations!");
 		cts.Cancel();
-		args.Cancel = true; // means to continue the process!
+		args.Cancel = true; // means to continue the process!, no hard cancel, but give process time to cleanup
 	};
 #if DEBUG
-	using var _ = new Benchmark("Copy");
+	using Benchmark _ = new("Copy");
 #endif
 
 	if (!Directory.Exists(options.SourceDirectory))
@@ -53,5 +51,6 @@ void Run(IOptions options)
 		if (options.LogErrors) logger.Log($"Source directory '{options.SourceDirectory}' does not exist");
 		return;
 	}
-	Backup.Run(logger, options, fileSystem, cts.Token);
+	using FileOperation op = new(logger, options);
+	Backup.Run(options, op, cts.Token);
 }
