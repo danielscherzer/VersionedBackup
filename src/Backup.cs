@@ -22,7 +22,7 @@ namespace VersionedBackup
 			var src = options.SourceDirectory;
 			var dst = options.DestinationDirectory;
 
-			op.CreateDirectory(dst);
+			op.CreateDirectory(""); // create destination
 
 			var srcDirs = Task.Run(src.EnumerateDirsRecursive()
 				.Ignore(options.IgnoreDirectories).ToArray, token);
@@ -42,7 +42,7 @@ namespace VersionedBackup
 			foreach (var subDir in newDirs)
 			{
 				if (token.IsCancellationRequested) return;
-				op.CreateDirectory(dst + subDir);
+				op.CreateDirectory(subDir);
 			}
 
 			// find directories in dst, but not in src
@@ -55,7 +55,7 @@ namespace VersionedBackup
 			foreach (var subDir in dirsToMove)
 			{
 				if (token.IsCancellationRequested) return;
-				op.MoveAwayOldDir(subDir);
+				op.MoveAwayDeletedDir(subDir);
 			}
 			// find files in dst, but not in src
 			var filesToMove = dstFilesRelative.Result.Where(dstFileRelative => !srcFilesRelative.Result.Contains(dstFileRelative));

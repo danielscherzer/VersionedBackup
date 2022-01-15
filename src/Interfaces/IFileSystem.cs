@@ -1,10 +1,15 @@
-﻿namespace VersionedBackup.Interfaces
+﻿using System.Collections.Generic;
+
+namespace VersionedBackup.Interfaces
 {
 	internal interface IFileSystem
 	{
-		void Copy(string srcFilePath, string dstFilePath);
-		void CreateDirectory(string path);
-		void MoveDirectory(string source, string destination);
-		void MoveFile(string source, string destination);
+		bool CreateDirectory(string path);
+		bool Copy(string srcFilePath, string dstFilePath);
+		bool ExistsDirectory(string name);
+		bool ExistsFile(string name);
+		bool HasChanged(string srcFilePath, string dstFilePath);
+		bool MoveDirectory(string source, string destination);
+		bool MoveFile(string source, string destination);
 	}
 }

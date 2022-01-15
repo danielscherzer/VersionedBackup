@@ -46,9 +46,15 @@ void Run(IOptions options)
 
 	if (!Directory.Exists(options.SourceDirectory))
 	{
-		if (options.LogErrors) logger.Log($"Source directory '{options.SourceDirectory}' does not exist");
+		logger.Log($"Source directory '{options.SourceDirectory}' does not exist");
 		return;
 	}
-	using FileOperation op = new(logger, options);
+	var fileSystem = new FileSystem(logger, options.DryRun);
+	Report report = new();
+	FileOperation op = new(report, options, fileSystem);
 	Backup.Run(options, op, cts.Token);
+	if (!options.DryRun)
+	{
+		report.Save(options.OldFilesFolder + "report.txt");
+	}
 }

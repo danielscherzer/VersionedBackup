@@ -2,15 +2,10 @@
 
 namespace VersionedBackup.Interfaces
 {
-	internal interface IOptions
+	internal interface IOptions : IOperation
 	{
-		string DestinationDirectory { get; }
 		IEnumerable<string> IgnoreDirectories { get; }
 		IEnumerable<string> IgnoreFiles { get; }
-		string SourceDirectory { get; }
-		string OldFilesFolder { get; }
-		bool LogErrors { get; }
-		bool LogOperations { get; }
 		bool DryRun { get; }
 	}
 }

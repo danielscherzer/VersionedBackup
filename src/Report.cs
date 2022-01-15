@@ -10,6 +10,7 @@ namespace VersionedBackup
 		{
 			report.Add(message);
 		}
+
 		public void Save(string fileName)
 		{
 			if (0 < report.Count) File.WriteAllLines(fileName, report);
