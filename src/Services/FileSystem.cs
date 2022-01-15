@@ -27,7 +27,6 @@ namespace VersionedBackup.Services
 			if (ReadOnly) return true;
 			return Successful(() =>
 			{
-				Logger.Log($"Copy file '{srcFilePath}' to '{dstFilePath}'");
 				File.Copy(srcFilePath, dstFilePath);
 			});
 		}
@@ -52,7 +51,7 @@ namespace VersionedBackup.Services
 			}
 			catch (SystemException e)
 			{
-				Logger.Log(e.Message);
+				Logger.Log($"ERROR: {e.Message}");
 				return false;
 			}
 		}
@@ -63,7 +62,6 @@ namespace VersionedBackup.Services
 			return Successful(() =>
 			{
 				Directory.CreateDirectory(destination + "..");
-				Logger.Log($"Moving directory '{source}' to '{destination}'");
 				Directory.Move(source, destination);
 			});
 		}
@@ -76,11 +74,10 @@ namespace VersionedBackup.Services
 				var parentDir = Path.GetDirectoryName(destination);
 				if(parentDir is null)
 				{
-					Logger.Log($"File '{destination}' has no parent directory.");
+					Logger.Log($"ERROR: File '{destination}' has no parent directory.");
 					return;
 				}
 				Directory.CreateDirectory(parentDir);
-				Logger.Log($"Moving file '{source}' to '{destination}'");
 				File.Move(source, destination);
 			});
 		}
@@ -94,7 +91,7 @@ namespace VersionedBackup.Services
 			}
 			catch (IOException e)
 			{
-				Logger.Log(e.Message);
+				Logger.Log($"ERROR: {e.Message}");
 				return false;
 			}
 		}

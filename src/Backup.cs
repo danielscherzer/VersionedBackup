@@ -17,12 +17,12 @@ namespace VersionedBackup
 		/// </summary>
 		/// <param name="options"></param>
 		/// <param name="token"><see cref="CancellationToken"/></param>
-		internal static void Run(IOptions options, FileOperation op, CancellationToken token)
+		internal static void Run(IOptions options, FileOperation op, IReadOnlyFileSystem fileSystem, CancellationToken token)
 		{
 			var src = options.SourceDirectory;
 			var dst = options.DestinationDirectory;
 
-			op.CreateDirectory(""); // create destination
+			if(!fileSystem.ExistsDirectory(dst)) op.CreateDirectory("");
 
 			var srcDirs = Task.Run(src.EnumerateDirsRecursive()
 				.Ignore(options.IgnoreDirectories).ToArray, token);

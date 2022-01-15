@@ -50,9 +50,9 @@ void Run(IOptions options)
 		return;
 	}
 	var fileSystem = new FileSystem(logger, options.DryRun);
-	Report report = new();
+	Report report = new(logger);
 	FileOperation op = new(report, options, fileSystem);
-	Backup.Run(options, op, cts.Token);
+	Backup.Run(options, op, fileSystem, cts.Token);
 	if (!options.DryRun)
 	{
 		report.Save(options.OldFilesFolder + "report.txt");

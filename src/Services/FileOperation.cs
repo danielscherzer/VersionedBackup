@@ -20,7 +20,7 @@ namespace VersionedBackup.Services
 			string directory = operationData.DestinationDirectory + subDir;
 			if (fileSystem.CreateDirectory(directory))
 			{
-				report.Add($"Create directory '{subDir}'");
+				report.Add("Create directory", subDir);
 			}
 		}
 
@@ -32,7 +32,7 @@ namespace VersionedBackup.Services
 				string destination = operationData.OldFilesFolder + subDir;
 				if(fileSystem.MoveDirectory(source, destination))
 				{
-					report.Add($"Deleted directory '{subDir}'");
+					report.Add("Deleted directory",subDir);
 				}
 			}
 		}
@@ -45,7 +45,7 @@ namespace VersionedBackup.Services
 				string destination = operationData.OldFilesFolder + fileName;
 				if(fileSystem.MoveFile(moveAwayFileName, destination))
 				{
-					report.Add($"Deleted file '{fileName}'");
+					report.Add("Deleted file", fileName);
 				}
 			}
 		}
@@ -56,7 +56,7 @@ namespace VersionedBackup.Services
 			var dstFilePath = operationData.DestinationDirectory + fileName;
 			if(fileSystem.Copy(srcFilePath, dstFilePath))
 			{
-				report.Add($"New file '{fileName}'");
+				report.Add("New file", fileName);
 			}
 		}
 
@@ -72,7 +72,7 @@ namespace VersionedBackup.Services
 					// copy new to dst
 					if(fileSystem.Copy(srcFilePath, dstFilePath))
 					{
-						report.Add($"Update file '{fileName}'");
+						report.Add("Update file",fileName);
 					}
 				}
 			}

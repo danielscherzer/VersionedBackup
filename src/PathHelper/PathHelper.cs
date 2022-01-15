@@ -13,6 +13,7 @@ namespace VersionedBackup.PathHelper
 			var stack = new Stack<string>();
 			stack.Push(dir);
 			yield return dir;
+			if (!Directory.Exists(dir)) yield break;
 			while (stack.Count > 0)
 			{
 				foreach (var subDir in Directory.EnumerateDirectories(stack.Pop()))
