@@ -5,6 +5,10 @@ using System.Threading;
 using VersionedBackup;
 using VersionedBackup.Interfaces;
 using VersionedBackup.Services;
+#if !DEBUG
+using AutoUpdateViaGitHubRelease;
+using System.Reflection;
+#endif
 
 // create logger service
 ILogger logger = new VersionedBackup.Services.Logger();
