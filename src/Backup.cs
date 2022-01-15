@@ -8,7 +8,7 @@ using VersionedBackup.Services;
 
 namespace VersionedBackup
 {
-	internal static class Backup
+	public static class Backup
 	{
 		/// <summary>
 		/// optimize common update case: assume two directory structures are very similar
@@ -17,22 +17,22 @@ namespace VersionedBackup
 		/// </summary>
 		/// <param name="options"></param>
 		/// <param name="token"><see cref="CancellationToken"/></param>
-		internal static void Run(IOptions options, FileOperation op, IReadOnlyFileSystem fileSystem, CancellationToken token)
+		public static void Run(IOptions options, FileSystemOperations op, IReadOnlyFileSystem fileSystem, CancellationToken token)
 		{
 			var src = options.SourceDirectory;
 			var dst = options.DestinationDirectory;
 
-			if(!fileSystem.ExistsDirectory(dst)) op.CreateDirectory("");
+			if (!fileSystem.ExistsDirectory(dst)) op.CreateDirectory("");
 
-			var srcDirs = Task.Run(src.EnumerateDirsRecursive()
+			var srcDirs = Task.Run(fileSystem.EnumerateDirsRecursive(src)
 				.Ignore(options.IgnoreDirectories).ToArray, token);
-			var dstDirs = Task.Run(dst.EnumerateDirsRecursive().ToArray, token);
+			var dstDirs = Task.Run(fileSystem.EnumerateDirsRecursive(dst).ToArray, token);
 
 			var srcFilesRelative = Task.Run(()
-				=> srcDirs.Result.EnumerateFiles().ToRelative(src)
+				=> fileSystem.EnumerateFiles(srcDirs.Result).ToRelative(src)
 				.Ignore(options.IgnoreFiles).ToHashSet(), token);
 			var dstFilesRelative = Task.Run(()
-				=> dstDirs.Result.EnumerateFiles().ToRelative(dst).ToHashSet(), token);
+				=> fileSystem.EnumerateFiles(dstDirs.Result).ToRelative(dst).ToHashSet(), token);
 
 			var srcDirsRelative = srcDirs.Result.ToRelative(src).ToHashSet();
 			var dstDirsRelative = dstDirs.Result.ToRelative(dst).ToHashSet();

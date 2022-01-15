@@ -1,8 +1,6 @@
-using AutoUpdateViaGitHubRelease;
 using CommandLine;
 using System;
 using System.IO;
-using System.Reflection;
 using System.Threading;
 using VersionedBackup;
 using VersionedBackup.Interfaces;
@@ -36,7 +34,7 @@ void Run(IOptions options)
 	using CancellationTokenSource cts = new();
 	Console.CancelKeyPress += (_, args) =>
 	{
-		logger.Log("CANCEL received - stopping opperations!");
+		logger.Add("CANCEL received - stopping opperations!");
 		cts.Cancel();
 		args.Cancel = true; // means to continue the process!, no hard cancel, but give process time to cleanup
 	};
@@ -46,12 +44,12 @@ void Run(IOptions options)
 
 	if (!Directory.Exists(options.SourceDirectory))
 	{
-		logger.Log($"Source directory '{options.SourceDirectory}' does not exist");
+		logger.Add($"Source directory '{options.SourceDirectory}' does not exist");
 		return;
 	}
 	var fileSystem = new FileSystem(logger, options.DryRun);
 	Report report = new(logger);
-	FileOperation op = new(report, options, fileSystem);
+	FileSystemOperations op = new(report, options, fileSystem);
 	Backup.Run(options, op, fileSystem, cts.Token);
 	if (!options.DryRun)
 	{

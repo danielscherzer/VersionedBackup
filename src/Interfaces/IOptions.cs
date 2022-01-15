@@ -2,7 +2,7 @@
 
 namespace VersionedBackup.Interfaces
 {
-	internal interface IOptions : IOperation
+	public interface IOptions : IDirectories
 	{
 		IEnumerable<string> IgnoreDirectories { get; }
 		IEnumerable<string> IgnoreFiles { get; }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace VersionedBackup
+namespace VersionedBackup.Services
 {
 	class Benchmark : IDisposable
 	{

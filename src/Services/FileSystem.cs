@@ -1,6 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices.ComTypes;
+using System.Linq;
 using VersionedBackup.Interfaces;
 
 namespace VersionedBackup.Services
@@ -31,10 +32,27 @@ namespace VersionedBackup.Services
 			});
 		}
 
-		//public IEnumerable<string> EnumerateFiles(this IEnumerable<string> dirs) =>
-		//	from subDir in dirs.AsParallel()
-		//	from file in Directory.EnumerateFiles(subDir)
-		//	select file;
+		//TODO: make multi threaded
+		public IEnumerable<string> EnumerateDirsRecursive(string dir)
+		{
+			var stack = new Stack<string>();
+			if (!Directory.Exists(dir)) yield break;
+			stack.Push(dir);
+			yield return dir;
+			while (stack.Count > 0)
+			{
+				foreach (var subDir in Directory.EnumerateDirectories(stack.Pop()))
+				{
+					yield return subDir + Path.DirectorySeparatorChar;
+					stack.Push(subDir);
+				}
+			}
+		}
+
+		public IEnumerable<string> EnumerateFiles(IEnumerable<string> dirs) =>
+			from subDir in dirs.AsParallel()
+			from file in Directory.EnumerateFiles(subDir)
+			select file;
 
 		public bool ExistsDirectory(string name) => Directory.Exists(name);
 
@@ -51,7 +69,7 @@ namespace VersionedBackup.Services
 			}
 			catch (SystemException e)
 			{
-				Logger.Log($"ERROR: {e.Message}");
+				Logger.Add($"ERROR: {e.Message}");
 				return false;
 			}
 		}
@@ -72,9 +90,9 @@ namespace VersionedBackup.Services
 			return Successful(() =>
 			{
 				var parentDir = Path.GetDirectoryName(destination);
-				if(parentDir is null)
+				if (parentDir is null)
 				{
-					Logger.Log($"ERROR: File '{destination}' has no parent directory.");
+					Logger.Add($"ERROR: File '{destination}' has no parent directory.");
 					return;
 				}
 				Directory.CreateDirectory(parentDir);
@@ -91,7 +109,7 @@ namespace VersionedBackup.Services
 			}
 			catch (IOException e)
 			{
-				Logger.Log($"ERROR: {e.Message}");
+				Logger.Add($"ERROR: {e.Message}");
 				return false;
 			}
 		}

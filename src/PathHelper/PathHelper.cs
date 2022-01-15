@@ -7,28 +7,6 @@ namespace VersionedBackup.PathHelper
 {
 	public static class PathHelper
 	{
-		//TODO: make multi threaded
-		internal static IEnumerable<string> EnumerateDirsRecursive(this string dir)
-		{
-			var stack = new Stack<string>();
-			stack.Push(dir);
-			yield return dir;
-			if (!Directory.Exists(dir)) yield break;
-			while (stack.Count > 0)
-			{
-				foreach (var subDir in Directory.EnumerateDirectories(stack.Pop()))
-				{
-					yield return subDir + Path.DirectorySeparatorChar;
-					stack.Push(subDir);
-				}
-			}
-		}
-
-		internal static IEnumerable<string> EnumerateFiles(this IEnumerable<string> dirs) =>
-			from subDir in dirs.AsParallel()
-			from file in Directory.EnumerateFiles(subDir)
-			select file;
-
 		public static IEnumerable<string> Ignore(this IEnumerable<string> paths, IEnumerable<string> ignorePaths)
 		{
 			var regexIgnorePaths = ignorePaths.Select(ignorePath

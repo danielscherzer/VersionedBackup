@@ -1,6 +1,6 @@
 ﻿namespace VersionedBackup.Interfaces
 {
-	internal interface IFileSystem : IReadOnlyFileSystem
+	public interface IFileSystem : IReadOnlyFileSystem
 	{
 		bool CreateDirectory(string path);
 		bool Copy(string srcFilePath, string dstFilePath);

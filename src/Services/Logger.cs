@@ -5,7 +5,7 @@ namespace VersionedBackup.Services
 {
 	internal class Logger : ILogger
 	{
-		public void Log(string message)
+		public void Add(string message)
 		{
 			Console.WriteLine(message);
 		}

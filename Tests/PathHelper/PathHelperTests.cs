@@ -39,7 +39,7 @@ namespace VersionedBackup.PathHelper.Tests
 		public void WildcardToRegexTest(string pattern, string match, bool isMatch = true)
 		{
 			var regex = new Regex(pattern.WildcardToRegex(), RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
-			if(isMatch) Assert.IsTrue(regex.IsMatch(match));
+			if (isMatch) Assert.IsTrue(regex.IsMatch(match));
 			else Assert.IsFalse(regex.IsMatch(match));
 		}
 	}

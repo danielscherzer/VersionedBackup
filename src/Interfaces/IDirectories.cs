@@ -1,6 +1,6 @@
 ﻿namespace VersionedBackup.Interfaces
 {
-	internal interface IOperation
+	public interface IDirectories
 	{
 		string DestinationDirectory { get; }
 		string OldFilesFolder { get; }

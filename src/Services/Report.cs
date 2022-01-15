@@ -2,19 +2,19 @@
 using System.IO;
 using VersionedBackup.Interfaces;
 
-namespace VersionedBackup
+namespace VersionedBackup.Services
 {
-	internal class Report
+	public class Report : IReport
 	{
 		public Report(ILogger logger)
 		{
 			this.logger = logger;
 		}
 
-		public void Add(string operation, string target)
+		public void Add(Operation operation, string target)
 		{
 			report.Add($"{operation} '{target}'");
-			logger.Log($"{operation} '{target}'");
+			logger.Add($"{operation} '{target}'");
 		}
 
 		public void Save(string fileName)
