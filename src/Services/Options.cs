@@ -18,7 +18,7 @@ namespace VersionedBackup.Services
 
 			SourceDirectory = Path.GetFullPath(sourceDirectory).IncludeTrailingPathDelimiter();
 			DestinationDirectory = Path.GetFullPath(destinationDirectory).IncludeTrailingPathDelimiter();
-			OldFilesFolder = $"{DestinationDirectory[0..^1]}-{DateTime.Now:yyyy-MM-dd_HHmmss}{Path.DirectorySeparatorChar}";
+			OldFilesFolder = $"{DestinationDirectory[0..^1]}-old{Path.DirectorySeparatorChar}{DateTime.Now:yyyy-MM-dd_HHmmss}{Path.DirectorySeparatorChar}";
 			IgnoreDirectories = (ignoreDirectories ?? throw new ArgumentNullException(nameof(ignoreDirectories))).Select(dir => dir.NormalizePathDelimiter().IncludeTrailingPathDelimiter());
 			IgnoreFiles = (ignoreFiles ?? throw new ArgumentNullException(nameof(ignoreFiles))).Select(file => file.NormalizePathDelimiter());
 			LogIgnoreOperations = logIgnoreOperations;

@@ -1,5 +1,3 @@
-//TODO: if program stopped last saved files is invalid
-
 using AutoUpdateViaGitHubRelease;
 using CommandLine;
 using System;
