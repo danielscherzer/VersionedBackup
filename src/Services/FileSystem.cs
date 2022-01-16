@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using VersionedBackup.Interfaces;
+using VersionedBackup.PathHelper;
 
 namespace VersionedBackup.Services
 {
 	internal class FileSystem : IFileSystem
 	{
-		public FileSystem(ILogger logger, bool readOnly)
+		public FileSystem(IErrorOutput errorOutput, bool readOnly)
 		{
-			Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+			ErrorOutput = errorOutput ?? throw new ArgumentNullException(nameof(errorOutput));
 			ReadOnly = readOnly;
 		}
 
-		private ILogger Logger { get; }
+		private IErrorOutput ErrorOutput { get; }
 		private bool ReadOnly { get; }
 
 		public bool CreateDirectory(string path)
@@ -38,7 +39,7 @@ namespace VersionedBackup.Services
 			var stack = new Stack<string>();
 			if (!Directory.Exists(dir)) yield break;
 			stack.Push(dir);
-			yield return dir;
+			yield return dir.IncludeTrailingPathDelimiter();
 			while (stack.Count > 0)
 			{
 				foreach (var subDir in Directory.EnumerateDirectories(stack.Pop()))
@@ -69,7 +70,7 @@ namespace VersionedBackup.Services
 			}
 			catch (SystemException e)
 			{
-				Logger.Add($"ERROR: {e.Message}");
+				ErrorOutput.Error(e.Message);
 				return false;
 			}
 		}
@@ -92,7 +93,7 @@ namespace VersionedBackup.Services
 				var parentDir = Path.GetDirectoryName(destination);
 				if (parentDir is null)
 				{
-					Logger.Add($"ERROR: File '{destination}' has no parent directory.");
+					ErrorOutput.Error($"File '{destination}' has no parent directory.");
 					return;
 				}
 				Directory.CreateDirectory(parentDir);
@@ -109,7 +110,7 @@ namespace VersionedBackup.Services
 			}
 			catch (IOException e)
 			{
-				Logger.Add($"ERROR: {e.Message}");
+				ErrorOutput.Error(e.Message);
 				return false;
 			}
 		}

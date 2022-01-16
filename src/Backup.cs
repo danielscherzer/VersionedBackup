@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,10 +18,16 @@ namespace VersionedBackup
 		/// </summary>
 		/// <param name="options"></param>
 		/// <param name="token"><see cref="CancellationToken"/></param>
-		public static void Run(IOptions options, FileSystemOperations op, IReadOnlyFileSystem fileSystem, CancellationToken token)
+		public static void Run(IOptions options, IReport report, IFileSystem fileSystem, CancellationToken token)
 		{
-			var src = options.SourceDirectory;
-			var dst = options.DestinationDirectory;
+			var src = options.SourceDirectory.IncludeTrailingPathDelimiter();
+			var dst = options.DestinationDirectory.IncludeTrailingPathDelimiter();
+			FileSystemOperations op = new(report, options, fileSystem);
+			if (!fileSystem.ExistsDirectory(src))
+			{
+				report.Error($"Source directory '{src}' does not exist");
+				return;
+			}
 
 			if (!fileSystem.ExistsDirectory(dst)) op.CreateDirectory("");
 

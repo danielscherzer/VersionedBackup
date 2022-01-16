@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using VersionedBackup.Interfaces;
 
@@ -6,15 +7,15 @@ namespace VersionedBackup.Services
 {
 	public class Report : IReport
 	{
-		public Report(ILogger logger)
-		{
-			this.logger = logger;
-		}
-
 		public void Add(Operation operation, string target)
 		{
 			report.Add($"{operation} '{target}'");
-			logger.Add($"{operation} '{target}'");
+			Console.WriteLine($"{operation} '{target}'");
+		}
+
+		public void Error(string message)
+		{
+			Console.WriteLine($"ERROR: {message}");
 		}
 
 		public void Save(string fileName)
@@ -23,6 +24,5 @@ namespace VersionedBackup.Services
 		}
 
 		private readonly List<string> report = new();
-		private readonly ILogger logger;
 	}
 }

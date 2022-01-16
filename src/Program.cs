@@ -11,7 +11,7 @@ using System.Reflection;
 #endif
 
 // create logger service
-ILogger logger = new VersionedBackup.Services.Logger();
+Report report = new();
 #if !DEBUG
 var assembly = Assembly.GetExecutingAssembly();
 var tempDir = Path.Combine(Path.GetTempPath(), nameof(VersionedBackup));
@@ -38,7 +38,7 @@ void Run(IOptions options)
 	using CancellationTokenSource cts = new();
 	Console.CancelKeyPress += (_, args) =>
 	{
-		logger.Add("CANCEL received - stopping opperations!");
+		report.Error("CANCEL received - stopping opperations!");
 		cts.Cancel();
 		args.Cancel = true; // means to continue the process!, no hard cancel, but give process time to cleanup
 	};
@@ -46,15 +46,8 @@ void Run(IOptions options)
 	using Benchmark _ = new("Copy");
 #endif
 
-	if (!Directory.Exists(options.SourceDirectory))
-	{
-		logger.Add($"Source directory '{options.SourceDirectory}' does not exist");
-		return;
-	}
-	var fileSystem = new FileSystem(logger, options.DryRun);
-	Report report = new(logger);
-	FileSystemOperations op = new(report, options, fileSystem);
-	Backup.Run(options, op, fileSystem, cts.Token);
+	var fileSystem = new FileSystem(report, options.DryRun);
+	Backup.Run(options, report, fileSystem, cts.Token);
 	if (!options.DryRun)
 	{
 		report.Save(options.OldFilesFolder + "report.txt");

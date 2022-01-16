@@ -1,23 +1,28 @@
 ﻿using VersionedBackup.Interfaces;
+using VersionedBackup.PathHelper;
 
 namespace VersionedBackup.Services
 {
 	public class FileSystemOperations
 	{
-		private readonly IDirectories directories;
 		private readonly IFileSystem fileSystem;
 		private readonly IReport report;
+		private readonly string src;
+		private readonly string dst;
+		private readonly string old;
 
 		public FileSystemOperations(IReport report, IDirectories directories, IFileSystem fileSystem)
 		{
 			this.report = report;
-			this.directories = directories;
 			this.fileSystem = fileSystem;
+			src = directories.SourceDirectory.IncludeTrailingPathDelimiter();
+			dst = directories.DestinationDirectory.IncludeTrailingPathDelimiter();
+			old = directories.OldFilesFolder.IncludeTrailingPathDelimiter();
 		}
 
 		internal void CreateDirectory(string subDir)
 		{
-			string directory = directories.DestinationDirectory + subDir;
+			string directory = dst + subDir;
 			if (fileSystem.CreateDirectory(directory))
 			{
 				report.Add(Operation.CreateDir, subDir);
@@ -26,10 +31,10 @@ namespace VersionedBackup.Services
 
 		internal void MoveAwayDeletedDir(string subDir)
 		{
-			string source = directories.DestinationDirectory + subDir;
+			string source = dst + subDir;
 			if (fileSystem.ExistsDirectory(source))
 			{
-				string destination = directories.OldFilesFolder + subDir;
+				string destination = old + subDir;
 				if (fileSystem.MoveDirectory(source, destination))
 				{
 					report.Add(Operation.DeleteDir, subDir);
@@ -39,10 +44,10 @@ namespace VersionedBackup.Services
 
 		internal void MoveAwayDeleted(string fileName)
 		{
-			string moveAwayFileName = directories.DestinationDirectory + fileName;
+			string moveAwayFileName = dst + fileName;
 			if (fileSystem.ExistsFile(moveAwayFileName))
 			{
-				string destination = directories.OldFilesFolder + fileName;
+				string destination = old + fileName;
 				if (fileSystem.MoveFile(moveAwayFileName, destination))
 				{
 					report.Add(Operation.DeleteFile, fileName);
@@ -52,8 +57,8 @@ namespace VersionedBackup.Services
 
 		internal void CopyNewFile(string fileName)
 		{
-			var srcFilePath = directories.SourceDirectory + fileName;
-			var dstFilePath = directories.DestinationDirectory + fileName;
+			var srcFilePath = src + fileName;
+			var dstFilePath = dst + fileName;
 			if (fileSystem.Copy(srcFilePath, dstFilePath))
 			{
 				report.Add(Operation.NewFile, fileName);
@@ -62,12 +67,12 @@ namespace VersionedBackup.Services
 
 		internal void UpdateFile(string fileName)
 		{
-			var srcFilePath = directories.SourceDirectory + fileName;
-			var dstFilePath = directories.DestinationDirectory + fileName;
+			var srcFilePath = src + fileName;
+			var dstFilePath = dst + fileName;
 			if (fileSystem.HasChanged(srcFilePath, dstFilePath))
 			{
 				// move old to oldFilesFolder
-				if (fileSystem.MoveFile(dstFilePath, directories.OldFilesFolder + fileName))
+				if (fileSystem.MoveFile(dstFilePath, old + fileName))
 				{
 					// copy new to dst
 					if (fileSystem.Copy(srcFilePath, dstFilePath))

@@ -1,6 +1,6 @@
 ﻿namespace VersionedBackup.Interfaces
 {
-	public interface IReport
+	public interface IReport : IErrorOutput
 	{
 		void Add(Operation operation, string target);
 	}

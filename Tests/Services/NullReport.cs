@@ -1,5 +1,6 @@
-﻿using VersionedBackup.Interfaces;
-using VersionedBackup.Services;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using VersionedBackup.Interfaces;
 
 namespace VersionedBackupTests.Services
 {
@@ -7,6 +8,11 @@ namespace VersionedBackupTests.Services
 	{
 		public void Add(Operation operation, string target)
 		{
+		}
+
+		public void Error(string message)
+		{
+			throw new Exception(message);
 		}
 	}
 }
