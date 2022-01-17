@@ -65,7 +65,7 @@ namespace VersionedBackup.Services
 			}
 		}
 
-		internal void UpdateFile(string fileName)
+		internal void CopyChangedFile(string fileName)
 		{
 			var srcFilePath = src + fileName;
 			var dstFilePath = dst + fileName;

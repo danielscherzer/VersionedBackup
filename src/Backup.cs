@@ -78,7 +78,7 @@ namespace VersionedBackup
 				{
 					if (dstFilesRelative.Result.Contains(fileName))
 					{
-						op.UpdateFile(fileName);
+						op.CopyChangedFile(fileName);
 					}
 					else
 					{
