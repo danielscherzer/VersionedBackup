@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
-namespace VersionedBackup.Interfaces
+namespace VersionedCopy.Interfaces
 {
 	public interface IOptions : IDirectories
 	{

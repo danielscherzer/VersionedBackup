@@ -1,5 +1,5 @@
 # Road map
-
+- [ ] Tests
 - [x] Continuous integration
 
 Features that have a check mark are complete.

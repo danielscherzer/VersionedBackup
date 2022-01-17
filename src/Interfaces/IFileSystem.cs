@@ -1,4 +1,4 @@
-﻿namespace VersionedBackup.Interfaces
+namespace VersionedCopy.Interfaces
 {
 	public interface IFileSystem : IReadOnlyFileSystem
 	{

@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
-using VersionedBackup.Interfaces;
+using VersionedCopy.Interfaces;
 
-namespace VersionedBackupTests.Services
+namespace VersionedCopyTests.Services
 {
 	internal class TestOptions : IOptions
 	{

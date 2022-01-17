@@ -1,7 +1,7 @@
-﻿using VersionedBackup.Interfaces;
-using VersionedBackup.PathHelper;
+using VersionedCopy.Interfaces;
+using VersionedCopy.PathHelper;
 
-namespace VersionedBackup.Services
+namespace VersionedCopy.Services
 {
 	public class FileSystemOperations
 	{

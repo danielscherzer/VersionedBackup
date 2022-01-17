@@ -1,4 +1,4 @@
-Tool for creating versioned backups.
+Tool for copying folder hierarchies with versioning. No directory/file is deleted, but only moved to a separate folder.
 
 See the [change log](CHANGELOG.md) for changes, features and road map.
 

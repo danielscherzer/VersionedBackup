@@ -3,10 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using VersionedBackup.Interfaces;
-using VersionedBackupTests.Services;
+using VersionedCopy.Interfaces;
+using VersionedCopyTests.Services;
 
-namespace VersionedBackup.Tests
+namespace VersionedCopy.Tests
 {
 	[TestClass()]
 	public class BackupTests
@@ -20,7 +20,7 @@ namespace VersionedBackup.Tests
 		{
 			var fileSystem = new VirtualFileSystem();
 			Assert.ThrowsException<Exception>(() =>
-			Backup.Run(new TestOptions(dirs), nullReport, fileSystem, token));
+			Backup.Mirror(new TestOptions(dirs), nullReport, fileSystem, token));
 		}
 
 		[TestMethod()]
@@ -28,7 +28,7 @@ namespace VersionedBackup.Tests
 		{
 			var fileSystem = new VirtualFileSystem();
 			fileSystem.CreateDirectory(dirs.SourceDirectory);
-			Backup.Run(new TestOptions(dirs), nullReport, fileSystem, token);
+			Backup.Mirror(new TestOptions(dirs), nullReport, fileSystem, token);
 		}
 
 		[TestMethod()]
@@ -39,7 +39,7 @@ namespace VersionedBackup.Tests
 			var srcDirs = new string[] {"a", dirs.SourceDirectory + "a", "b", "_" };
 			foreach (var subDir in srcDirs) fileSystem.CreateDirectory(Path.Combine(dirs.SourceDirectory, subDir));
 			fileSystem.CreateDirectory(Path.Combine(dirs.DestinationDirectory, srcDirs[0]));
-			Backup.Run(new TestOptions(dirs), nullReport, fileSystem, token);
+			Backup.Mirror(new TestOptions(dirs), nullReport, fileSystem, token);
 			foreach (var subDir in srcDirs) Assert.IsTrue(fileSystem.ExistsDirectory(Path.Combine(dirs.DestinationDirectory, subDir)));
 		}
 
@@ -51,7 +51,7 @@ namespace VersionedBackup.Tests
 			fileSystem.CreateDirectory(dirs.SourceDirectory);
 			var srcFiles = new string[] { "d", "b", "c", "z" };
 			foreach (var file in srcFiles) fileSystem.CreateFile(Path.Combine(dirs.SourceDirectory, file));
-			Backup.Run(new TestOptions(dirs), nullReport, fileSystem, token);
+			Backup.Mirror(new TestOptions(dirs), nullReport, fileSystem, token);
 			foreach (var file in srcFiles) Assert.IsTrue(fileSystem.ExistsFile(Path.Combine(dirs.DestinationDirectory, file)));
 		}
 
@@ -64,7 +64,7 @@ namespace VersionedBackup.Tests
 			foreach (var subDir in srcDirs) fileSystem.CreateDirectory(Path.Combine(dirs.SourceDirectory, subDir));
 			var srcFiles = new string[] { "x", "y", "z" };
 			foreach (var file in srcFiles) fileSystem.CreateFile(Path.Combine(dirs.SourceDirectory, srcDirs[0], file));
-			Backup.Run(new TestOptions(dirs), nullReport, fileSystem, token);
+			Backup.Mirror(new TestOptions(dirs), nullReport, fileSystem, token);
 			foreach (var file in srcFiles) Assert.IsTrue(fileSystem.ExistsFile(Path.Combine(dirs.DestinationDirectory, srcDirs[0], file)));
 			foreach (var subDir in srcDirs) Assert.IsTrue(fileSystem.ExistsDirectory(Path.Combine(dirs.DestinationDirectory, subDir)));
 		}
@@ -99,7 +99,7 @@ namespace VersionedBackup.Tests
 			fileSystem.CreateDirectory(dirs.SourceDirectory);
 			FillFileSystem(dirs.SourceDirectory);
 
-			Backup.Run(new TestOptions(dirs), nullReport, fileSystem, token);
+			Backup.Mirror(new TestOptions(dirs), nullReport, fileSystem, token);
 			foreach (var file in srcFiles) Assert.IsTrue(fileSystem.ExistsFile(Path.Combine(dirs.DestinationDirectory, file)));
 			foreach (var subDir in srcSubDirs) Assert.IsTrue(fileSystem.ExistsDirectory(Path.Combine(dirs.DestinationDirectory, subDir)));
 		}

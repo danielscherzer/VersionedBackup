@@ -2,9 +2,9 @@ using CommandLine;
 using System;
 using System.IO;
 using System.Threading;
-using VersionedBackup;
-using VersionedBackup.Interfaces;
-using VersionedBackup.Services;
+using VersionedCopy;
+using VersionedCopy.Interfaces;
+using VersionedCopy.Services;
 #if !DEBUG
 using AutoUpdateViaGitHubRelease;
 using System.Reflection;
@@ -47,7 +47,7 @@ void Run(IOptions options)
 #endif
 
 	var fileSystem = new FileSystem(report, options.DryRun);
-	Backup.Run(options, report, fileSystem, cts.Token);
+	Backup.Mirror(options, report, fileSystem, cts.Token);
 	if (!options.DryRun)
 	{
 		report.Save(options.OldFilesFolder + "report.txt");

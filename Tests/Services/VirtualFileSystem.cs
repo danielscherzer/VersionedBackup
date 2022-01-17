@@ -1,10 +1,10 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using VersionedBackup.Interfaces;
-using VersionedBackup.PathHelper;
+using VersionedCopy.Interfaces;
+using VersionedCopy.PathHelper;
 
-namespace VersionedBackupTests.Services
+namespace VersionedCopyTests.Services
 {
 	internal class VirtualFileSystem : IFileSystem
 	{

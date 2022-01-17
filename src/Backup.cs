@@ -1,13 +1,12 @@
-﻿using System;
-using System.IO;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using VersionedBackup.Interfaces;
-using VersionedBackup.PathHelper;
-using VersionedBackup.Services;
+using VersionedCopy.Interfaces;
+using VersionedCopy.PathHelper;
+using VersionedCopy.Services;
 
-namespace VersionedBackup
+namespace VersionedCopy
 {
 	public static class Backup
 	{
@@ -18,7 +17,7 @@ namespace VersionedBackup
 		/// </summary>
 		/// <param name="options"></param>
 		/// <param name="token"><see cref="CancellationToken"/></param>
-		public static void Run(IOptions options, IReport report, IFileSystem fileSystem, CancellationToken token)
+		public static void Mirror(IOptions options, IReport report, IFileSystem fileSystem, CancellationToken token)
 		{
 			var src = options.SourceDirectory.IncludeTrailingPathDelimiter();
 			var dst = options.DestinationDirectory.IncludeTrailingPathDelimiter();

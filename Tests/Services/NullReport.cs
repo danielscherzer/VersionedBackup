@@ -1,8 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using VersionedBackup.Interfaces;
+using VersionedCopy.Interfaces;
 
-namespace VersionedBackupTests.Services
+namespace VersionedCopyTests.Services
 {
 	internal class NullReport : IReport
 	{

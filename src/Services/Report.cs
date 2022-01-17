@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using VersionedBackup.Interfaces;
+using VersionedCopy.Interfaces;
 
-namespace VersionedBackup.Services
+namespace VersionedCopy.Services
 {
 	public class Report : IReport
 	{
