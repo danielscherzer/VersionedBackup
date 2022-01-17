@@ -6,5 +6,6 @@ namespace VersionedCopy.Interfaces
 		bool Copy(string srcFilePath, string dstFilePath);
 		bool MoveDirectory(string source, string destination);
 		bool MoveFile(string source, string destination);
+		bool IsNewer(string source, string destination);
 	}
 }

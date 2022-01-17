@@ -77,6 +77,24 @@ namespace VersionedCopy.Services
 					// copy new to dst
 					if (fileSystem.Copy(srcFilePath, dstFilePath))
 					{
+						report.Add(Operation.ReplaceFile, fileName);
+					}
+				}
+			}
+		}
+
+		internal void CopyUpdatedFile(string fileName)
+		{
+			var srcFilePath = src + fileName;
+			var dstFilePath = dst + fileName;
+			if (fileSystem.IsNewer(srcFilePath, dstFilePath))
+			{
+				// move old to oldFilesFolder
+				if (fileSystem.MoveFile(dstFilePath, old + fileName))
+				{
+					// copy updated to dst
+					if (fileSystem.Copy(srcFilePath, dstFilePath))
+					{
 						report.Add(Operation.UpdateFile, fileName);
 					}
 				}

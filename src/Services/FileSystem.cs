@@ -75,6 +75,21 @@ namespace VersionedCopy.Services
 			}
 		}
 
+		public bool IsNewer(string source, string destination)
+		{
+			try
+			{
+				var srcFileInfo = new FileInfo(source);
+				var dstFileInfo = new FileInfo(destination);
+				return (srcFileInfo.LastWriteTimeUtc > dstFileInfo.LastWriteTimeUtc);
+			}
+			catch (SystemException e)
+			{
+				ErrorOutput.Error(e.Message);
+				return false;
+			}
+		}
+
 		public bool MoveDirectory(string source, string destination)
 		{
 			if (ReadOnly) return true;

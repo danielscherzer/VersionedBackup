@@ -39,6 +39,9 @@ namespace VersionedCopy.Services
 		[Option(longName: "dryRun", Default = false, Required = false, HelpText = "Only list operations. Do not change file system.")]
 		public bool DryRun { get; }
 
+		[Option(longName: "mode", Default = false, Required = false, HelpText = "Choose copy mode from mirror source to destination, or sync.")]
+		public AlgoMode Mode { get; } = AlgoMode.Mirror;
+
 		public string OldFilesFolder { get; } = "";
 	}
 }

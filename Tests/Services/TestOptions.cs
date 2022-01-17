@@ -19,5 +19,6 @@ namespace VersionedCopyTests.Services
 		public string DestinationDirectory => dirs.DestinationDirectory;
 		public string OldFilesFolder => dirs.OldFilesFolder;
 		public string SourceDirectory => dirs.SourceDirectory;
+		public AlgoMode Mode { get; set; } = AlgoMode.Mirror;
 	}
 }

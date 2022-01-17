@@ -47,7 +47,7 @@ void Run(IOptions options)
 #endif
 
 	var fileSystem = new FileSystem(report, options.DryRun);
-	Backup.Mirror(options, report, fileSystem, cts.Token);
+	Algorithms.Run(options, report, fileSystem, cts.Token);
 	if (!options.DryRun)
 	{
 		report.Save(options.OldFilesFolder + "report.txt");

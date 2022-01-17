@@ -8,7 +8,7 @@ using VersionedCopy.Services;
 
 namespace VersionedCopy
 {
-	public static class Backup
+	public static class Algorithms
 	{
 		/// <summary>
 		/// optimize common update case: assume two directory structures are very similar
@@ -17,7 +17,7 @@ namespace VersionedCopy
 		/// </summary>
 		/// <param name="options"></param>
 		/// <param name="token"><see cref="CancellationToken"/></param>
-		public static void Mirror(IOptions options, IReport report, IFileSystem fileSystem, CancellationToken token)
+		public static void Run(IOptions options, IReport report, IFileSystem fileSystem, CancellationToken token)
 		{
 			var src = options.SourceDirectory.IncludeTrailingPathDelimiter();
 			var dst = options.DestinationDirectory.IncludeTrailingPathDelimiter();
@@ -73,11 +73,13 @@ namespace VersionedCopy
 
 			try
 			{
+				bool mirror = options.Mode == AlgoMode.Mirror;
 				Parallel.ForEach(srcFilesRelative.Result, new ParallelOptions { CancellationToken = token }, fileName =>
 				{
 					if (dstFilesRelative.Result.Contains(fileName))
 					{
-						op.CopyChangedFile(fileName);
+						if(mirror) op.CopyChangedFile(fileName);
+						else op.CopyUpdatedFile(fileName);
 					}
 					else
 					{
