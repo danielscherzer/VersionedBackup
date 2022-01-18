@@ -50,6 +50,6 @@ void Run(IOptions options)
 	Algorithms.Run(options, report, fileSystem, cts.Token);
 	if (!options.DryRun)
 	{
-		report.Save(options.OldFilesFolder + "report.txt");
+		report.Save(options.OldFilesFolder + "report.json");
 	}
 }
