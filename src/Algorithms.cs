@@ -51,24 +51,26 @@ namespace VersionedCopy
 				op.CreateDirectory(subDir);
 			}
 
-			// find directories in dst, but not in src
-			var dirsToMove = dstDirsRelative.Where(dstDir => !srcDirsRelative.Contains(dstDir));
-
 			// make sure dst enumeration task has ended before changing directories and files
 			dstFilesRelative.Wait(token);
 
-			// move away old directories
-			foreach (var subDir in dirsToMove)
+			if(options.Mode != AlgoMode.Update)
 			{
-				if (token.IsCancellationRequested) return;
-				op.MoveAwayDeletedDir(subDir);
-			}
-			// find files in dst, but not in src
-			var filesToMove = dstFilesRelative.Result.Where(dstFileRelative => !srcFilesRelative.Result.Contains(dstFileRelative));
-			foreach (var fileName in filesToMove)
-			{
-				if (token.IsCancellationRequested) return;
-				op.MoveAwayDeleted(fileName);
+				// find directories in dst, but not in src
+				var dirsToMove = dstDirsRelative.Where(dstDir => !srcDirsRelative.Contains(dstDir));
+				// move away old directories
+				foreach (var subDir in dirsToMove)
+				{
+					if (token.IsCancellationRequested) return;
+					op.MoveAwayDeletedDir(subDir);
+				}
+				// find files in dst, but not in src
+				var filesToMove = dstFilesRelative.Result.Where(dstFileRelative => !srcFilesRelative.Result.Contains(dstFileRelative));
+				foreach (var fileName in filesToMove)
+				{
+					if (token.IsCancellationRequested) return;
+					op.MoveAwayDeleted(fileName);
+				}
 			}
 
 			try

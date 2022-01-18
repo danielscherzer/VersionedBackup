@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +10,7 @@ namespace VersionedCopy.Services
 	{
 		public void Add(Operation operation, string target)
 		{
-			report.Add($"{operation} '{target}'");
+			report.Add((operation, target));
 			Console.WriteLine($"{operation} '{target}'");
 		}
 
@@ -20,9 +21,10 @@ namespace VersionedCopy.Services
 
 		public void Save(string fileName)
 		{
-			if (0 < report.Count) File.WriteAllLines(fileName, report);
+			string json = JsonConvert.SerializeObject(report, Formatting.Indented);
+			if (0 < report.Count) File.WriteAllText(fileName, json);
 		}
 
-		private readonly List<string> report = new();
+		private readonly List<(Operation, string)> report = new();
 	}
 }

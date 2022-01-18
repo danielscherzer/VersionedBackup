@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using VersionedCopy.Interfaces;
 using VersionedCopy.PathHelper;
 
@@ -10,7 +11,7 @@ namespace VersionedCopyTests.Services
 {
 	internal class VirtualFileSystem : IFileSystem
 	{
-		public bool Copy(string srcFilePath, string dstFilePath) => files.TryAdd(dstFilePath, 0);
+		public bool Copy(string srcFilePath, string dstFilePath) => files.TryAdd(dstFilePath, files[srcFilePath]);
 
 		public bool CreateDirectory(string name) => dirs.TryAdd(NormalizeDir(name), 0);
 
@@ -32,12 +33,12 @@ namespace VersionedCopyTests.Services
 
 		public bool HasChanged(string srcFilePath, string dstFilePath)
 		{
-			return false;
+			return files[srcFilePath] != files[dstFilePath];
 		}
 
-		public bool IsNewer(string source, string destination)
+		public bool IsNewer(string srcFilePath, string dstFilePath)
 		{
-			return false;
+			return files[srcFilePath] > files[dstFilePath];
 		}
 
 		public bool MoveDirectory(string source, string destination)
@@ -46,14 +47,15 @@ namespace VersionedCopyTests.Services
 		}
 
 		public bool MoveFile(string source, string destination)
-		{
-			return DeleteFile(source) && files.TryAdd(destination, 0);
+{
+			return files.Remove(source, out var date) && files.TryAdd(destination, date);
 		}
 
 		internal void CreateFile(string name) => files.TryAdd(name, 0);
 
 		internal bool DeleteDir(string name) => dirs.Remove(NormalizeDir(name), out _);
 		internal bool DeleteFile(string name) => files.Remove(name, out _);
+
 
 		internal void UpdateFile(string name) => ++files[name];
 

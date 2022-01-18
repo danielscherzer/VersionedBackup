@@ -1,6 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -68,20 +67,16 @@ namespace VersionedCopy.Tests
 			foreach (var file in srcFiles) fileSystem.CreateFile(Path.Combine(dirs.SourceDirectory, file));
 			
 			Algorithms.Run(new TestOptions(dirs), nullReport, fileSystem, token);
-			AssertContains(fileSystem, dirs.DestinationDirectory, srcFiles, srcDirs);
+			FileSystemPart.AssertContains(fileSystem, dirs.DestinationDirectory, srcFiles, srcDirs);
 		}
 
 		[TestMethod()]
 		public void RunBigCopyTest()
 		{
 			var fileSystem = new VirtualFileSystem();
-			List<string> srcFiles = new();
-			List<string> srcSubDirs = new();
-			int relativeStart = dirs.SourceDirectory.Length + 1;
-			fileSystem.RndFill(dirs.SourceDirectory, 21, "", path => srcSubDirs.Add(path[relativeStart..]), path => srcFiles.Add(path[relativeStart..]));
-
+			var part = new FileSystemPart(fileSystem, dirs.SourceDirectory, 21);
 			Algorithms.Run(new TestOptions(dirs), nullReport, fileSystem, token);
-			AssertContains(fileSystem, dirs.DestinationDirectory, srcFiles, srcSubDirs);
+			part.AssertContainsPart(dirs.DestinationDirectory);
 		}
 
 		[TestMethod()]
@@ -89,40 +84,107 @@ namespace VersionedCopy.Tests
 		{
 			var fileSystem = new VirtualFileSystem();
 			fileSystem.CreateDirectory(dirs.SourceDirectory);
-			List<string> dstFiles = new();
-			List<string> dstSubDirs = new();
-			int relativeStart = dirs.DestinationDirectory.Length + 1;
-			fileSystem.RndFill(dirs.DestinationDirectory, 21, "", path => dstSubDirs.Add(path[relativeStart..]), path => dstFiles.Add(path[relativeStart..]));
-
+			var part = new FileSystemPart(fileSystem, dirs.DestinationDirectory, 21);
 			Algorithms.Run(new TestOptions(dirs), nullReport, fileSystem, token);
 			AssertEmptyDestination(fileSystem);
 			//check all dst files/folders are moved to old
-			AssertContains(fileSystem, dirs.OldFilesFolder, dstFiles, dstSubDirs);
+			part.AssertContainsPart(dirs.OldFilesFolder);
 		}
 
 		[TestMethod()]
 		public void RunBigMirrorTest()
 		{
 			var fileSystem = new VirtualFileSystem();
-			List<string> srcFiles = new();
-			List<string> srcSubDirs = new();
-			int relativeStart = dirs.SourceDirectory.Length + 1;
+			var part = new FileSystemPart(fileSystem, dirs.SourceDirectory, 21, "x");
 			fileSystem.RndFill(dirs.DestinationDirectory, 4); // add some files/dirs at destination that should be removed
-			fileSystem.RndFill(dirs.SourceDirectory, 21, "xx", path => srcSubDirs.Add(path[relativeStart..]), path => srcFiles.Add(path[relativeStart..]));
 
 			Algorithms.Run(new TestOptions(dirs), nullReport, fileSystem, token);
-			
-			AssertContains(fileSystem, dirs.DestinationDirectory, srcFiles, srcSubDirs);
+
+			part.AssertContainsPart(dirs.DestinationDirectory);
 			//TODO: check if no addtional files exist
-			foreach (var file in srcFiles) fileSystem.DeleteFile(Path.Combine(dirs.DestinationDirectory, file));
-			foreach (var subDir in srcSubDirs) fileSystem.DeleteDir(Path.Combine(dirs.DestinationDirectory, subDir));
+			foreach (var file in part.Files) fileSystem.DeleteFile(Path.Combine(dirs.DestinationDirectory, file));
+			foreach (var subDir in part.SubDirs) fileSystem.DeleteDir(Path.Combine(dirs.DestinationDirectory, subDir));
 			AssertEmptyDestination(fileSystem);
 		}
 
-		private static void AssertContains(VirtualFileSystem fileSystem, string root, IEnumerable<string> srcFiles, IEnumerable<string> srcSubDirs)
+		[TestMethod()]
+		public void MirrorNewerDstTest()
 		{
-			foreach (var file in srcFiles) Assert.IsTrue(fileSystem.ExistsFile(Path.Combine(root, file)));
-			foreach (var subDir in srcSubDirs) Assert.IsTrue(fileSystem.ExistsDirectory(Path.Combine(root, subDir)));
+			var fileSystem = new VirtualFileSystem();
+			fileSystem.CreateDirectory(dirs.SourceDirectory);
+			var partDst = new FileSystemPart(fileSystem, dirs.DestinationDirectory, 6, "x");
+			var srcFile = Path.Combine(dirs.SourceDirectory, partDst.Files.First());
+			fileSystem.CreateFile(srcFile);
+			var updatedFileDst = Path.Combine(dirs.DestinationDirectory, partDst.Files.First());
+			fileSystem.UpdateFile(updatedFileDst);
+
+			var options = new TestOptions(dirs) { Mode = AlgoMode.Mirror };
+			Algorithms.Run(options, nullReport, fileSystem, token);
+			Assert.IsFalse(fileSystem.HasChanged(updatedFileDst, srcFile));
+			var updatedFileOld = Path.Combine(dirs.OldFilesFolder, partDst.Files.First());
+			Assert.IsTrue(fileSystem.HasChanged(updatedFileDst, updatedFileOld));
+		}
+
+		[TestMethod()]
+		public void UpdateFromEmptyTest()
+		{
+			var fileSystem = new VirtualFileSystem();
+			fileSystem.CreateDirectory(dirs.SourceDirectory);
+			var part = new FileSystemPart(fileSystem, dirs.DestinationDirectory, 21);
+
+			var options = new TestOptions(dirs) { Mode = AlgoMode.Update };
+			Algorithms.Run(options, nullReport, fileSystem, token);
+			//check all dst files/folders remain untoched
+			part.AssertContainsPart(dirs.DestinationDirectory);
+		}
+
+		[TestMethod()]
+		public void UpdateTest()
+		{
+			var fileSystem = new VirtualFileSystem();
+			var partSrc = new FileSystemPart(fileSystem, dirs.SourceDirectory, 21);
+			var partDst = new FileSystemPart(fileSystem, dirs.DestinationDirectory, 6, "x");
+
+			var options = new TestOptions(dirs) { Mode = AlgoMode.Update };
+			Algorithms.Run(options, nullReport, fileSystem, token);
+			partSrc.AssertContainsPart(dirs.DestinationDirectory);
+			partDst.AssertContainsPart(dirs.DestinationDirectory);
+		}
+
+		[TestMethod()]
+		public void UpdateNewerSrcTest()
+		{
+			var fileSystem = new VirtualFileSystem();
+			fileSystem.CreateDirectory(dirs.SourceDirectory);
+			var partDst = new FileSystemPart(fileSystem, dirs.DestinationDirectory, 6, "x");
+			var updatedFile = Path.Combine(dirs.SourceDirectory, partDst.Files.First());
+			fileSystem.CreateFile(updatedFile);
+			fileSystem.UpdateFile(updatedFile);
+			var updatedFileDst = Path.Combine(dirs.DestinationDirectory, partDst.Files.First());
+
+			var options = new TestOptions(dirs) { Mode = AlgoMode.Update };
+			Algorithms.Run(options, nullReport, fileSystem, token);
+			partDst.AssertContainsPart(dirs.DestinationDirectory);
+			// check if same file after run
+			Assert.IsFalse(fileSystem.HasChanged(updatedFile, updatedFileDst));
+
+		}
+
+		[TestMethod()]
+		public void UpdateNewerDstTest()
+		{
+			var fileSystem = new VirtualFileSystem();
+			fileSystem.CreateDirectory(dirs.SourceDirectory);
+			var partDst = new FileSystemPart(fileSystem, dirs.DestinationDirectory, 6, "x");
+			var srcFile = Path.Combine(dirs.SourceDirectory, partDst.Files.First());
+			fileSystem.CreateFile(srcFile);
+			var updatedFileDst = Path.Combine(dirs.DestinationDirectory, partDst.Files.First());
+			fileSystem.UpdateFile(updatedFileDst);
+
+			var options = new TestOptions(dirs) { Mode = AlgoMode.Update };
+			Algorithms.Run(options, nullReport, fileSystem, token);
+			partDst.AssertContainsPart(dirs.DestinationDirectory);
+			Assert.IsTrue(fileSystem.IsNewer(updatedFileDst, srcFile));
 		}
 
 		private void AssertEmptyDestination(VirtualFileSystem fileSystem)
