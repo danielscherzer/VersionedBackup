@@ -14,10 +14,10 @@ using System.Reflection;
 Report report = new();
 #if !DEBUG
 var assembly = Assembly.GetExecutingAssembly();
-var tempDir = Path.Combine(Path.GetTempPath(), nameof(VersionedBackup));
+var tempDir = Path.Combine(Path.GetTempPath(), nameof(VersionedCopy));
 Directory.CreateDirectory(tempDir);
 var updateArchive = Path.Combine(tempDir, "update.zip");
-var updateTask = UpdateTools.CheckDownloadNewVersionAsync("danielScherzer", "VersionedBackup"
+var updateTask = UpdateTools.CheckDownloadNewVersionAsync("danielScherzer", "VersionedCopy"
 	, assembly.GetName().Version, updateArchive);
 var v = assembly.GetName().Version;
 #endif
