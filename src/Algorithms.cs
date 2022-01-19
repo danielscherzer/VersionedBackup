@@ -1,3 +1,4 @@
+using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using System.Threading;
@@ -19,9 +20,9 @@ namespace VersionedCopy
 		/// <param name="token"><see cref="CancellationToken"/></param>
 		public static void Run(IOptions options, IReport report, IFileSystem fileSystem, CancellationToken token)
 		{
+			FileSystemOperations op = new(report, options, fileSystem);
 			var src = options.SourceDirectory.IncludeTrailingPathDelimiter();
 			var dst = options.DestinationDirectory.IncludeTrailingPathDelimiter();
-			FileSystemOperations op = new(report, options, fileSystem);
 			if (!fileSystem.ExistsDirectory(src))
 			{
 				report.Error($"Source directory '{src}' does not exist");
@@ -32,13 +33,15 @@ namespace VersionedCopy
 
 			var srcDirs = Task.Run(fileSystem.EnumerateDirsRecursive(src)
 				.Ignore(options.IgnoreDirectories).ToArray, token);
-			var dstDirs = Task.Run(fileSystem.EnumerateDirsRecursive(dst).ToArray, token);
+			var dstDirs = Task.Run(fileSystem.EnumerateDirsRecursive(dst)
+				.Ignore(options.IgnoreDirectories).ToArray, token);
 
 			var srcFilesRelative = Task.Run(()
 				=> fileSystem.EnumerateFiles(srcDirs.Result).ToRelative(src)
 				.Ignore(options.IgnoreFiles).ToHashSet(), token);
 			var dstFilesRelative = Task.Run(()
-				=> fileSystem.EnumerateFiles(dstDirs.Result).ToRelative(dst).ToHashSet(), token);
+				=> fileSystem.EnumerateFiles(dstDirs.Result).ToRelative(dst)
+				.Ignore(options.IgnoreFiles).ToHashSet(), token);
 
 			var srcDirsRelative = srcDirs.Result.ToRelative(src).ToHashSet();
 			var dstDirsRelative = dstDirs.Result.ToRelative(dst).ToHashSet();

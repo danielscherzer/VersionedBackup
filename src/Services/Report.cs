@@ -20,7 +20,7 @@ namespace VersionedCopy.Services
 		}
 
 		public void Save(string fileName)
-		{
+		{//TODO: better json
 			string json = JsonConvert.SerializeObject(report, Formatting.Indented);
 			if (0 < report.Count) File.WriteAllText(fileName, json);
 		}

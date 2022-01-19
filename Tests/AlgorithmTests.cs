@@ -101,7 +101,7 @@ namespace VersionedCopy.Tests
 			Algorithms.Run(new TestOptions(dirs), nullReport, fileSystem, token);
 
 			part.AssertContainsPart(dirs.DestinationDirectory);
-			//TODO: check if no addtional files exist
+			//Check if no addtional files exist
 			foreach (var file in part.Files) fileSystem.DeleteFile(Path.Combine(dirs.DestinationDirectory, file));
 			foreach (var subDir in part.SubDirs) fileSystem.DeleteDir(Path.Combine(dirs.DestinationDirectory, subDir));
 			AssertEmptyDestination(fileSystem);

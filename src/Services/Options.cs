@@ -8,7 +8,7 @@ using VersionedCopy.PathHelper;
 
 namespace VersionedCopy.Services
 {
-	internal class Options : IOptions
+	public class Options : IOptions
 	{
 		public Options(string sourceDirectory, string destinationDirectory
 			, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, bool dryRun, AlgoMode mode)
