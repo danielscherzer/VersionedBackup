@@ -16,18 +16,18 @@ namespace VersionedCopy.Program.Tests
 	{
 		[DataTestMethod()]
 		[DataRow(new string[] { "c:\\src", "d:\\dst" })]
-		[DataRow(new string[] { "c:\\src", "d:\\dst", "--mode 0" })]
+		[DataRow(new string[] { "c:\\src", "d:\\dst", "--mode=Sync" })]
 		public void ParseArgumentsTest(string[] args)
 		{
 			void Run(IOptions options)
 			{
 				Assert.AreEqual(args[0].IncludeTrailingPathDelimiter(), options.SourceDirectory);
 				Assert.AreEqual(args[1].IncludeTrailingPathDelimiter(), options.DestinationDirectory);
-				Assert.AreEqual(args[2], options.Mode);
+				if(args.Length > 2) Assert.AreEqual(AlgoMode.Sync, options.Mode);
 			}
 			void Error(IEnumerable<Error> errors)
 			{
-				//Assert.Fail(string.Join('\n', errors.Select(error => error.ToString())));
+				Assert.Fail(string.Join('\n', errors.Select(error => error.ToString())));
 			}
 			try
 			{
