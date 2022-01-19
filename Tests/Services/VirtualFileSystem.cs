@@ -11,6 +11,11 @@ namespace VersionedCopyTests.Services
 {
 	internal class VirtualFileSystem : IFileSystem
 	{
+		public int CompareAge(string source, string destination)
+		{
+			return files[source].CompareTo(files[destination]);
+		}
+
 		public bool Copy(string srcFilePath, string dstFilePath) => files.TryAdd(dstFilePath, files[srcFilePath]);
 
 		public bool CreateDirectory(string name) => dirs.TryAdd(NormalizeDir(name), 0);
@@ -36,11 +41,6 @@ namespace VersionedCopyTests.Services
 			return files[srcFilePath] != files[dstFilePath];
 		}
 
-		public bool IsNewer(string srcFilePath, string dstFilePath)
-		{
-			return files[srcFilePath] > files[dstFilePath];
-		}
-
 		public bool MoveDirectory(string source, string destination)
 		{
 			return DeleteDir(source) && dirs.TryAdd(NormalizeDir(destination), 0);
@@ -55,10 +55,7 @@ namespace VersionedCopyTests.Services
 
 		internal bool DeleteDir(string name) => dirs.Remove(NormalizeDir(name), out _);
 		internal bool DeleteFile(string name) => files.Remove(name, out _);
-
-
 		internal void UpdateFile(string name) => ++files[name];
-
 
 		private readonly ConcurrentDictionary<string,int> dirs = new();
 		private readonly ConcurrentDictionary<string, int> files = new();

@@ -1,3 +1,4 @@
+using System;
 using VersionedCopy.Interfaces;
 using VersionedCopy.PathHelper;
 
@@ -19,10 +20,57 @@ namespace VersionedCopy.Services
 			dst = directories.DestinationDirectory.IncludeTrailingPathDelimiter();
 			old = directories.OldFilesFolder.IncludeTrailingPathDelimiter();
 		}
+		internal void CopyNewFile(string fileName)
+		{
+			var srcFilePath = src + fileName;
+			var dstFilePath = dst + fileName;
+			if (fileSystem.Copy(srcFilePath, dstFilePath))
+			{
+				report.Add(Operation.NewFile, fileName);
+			}
+		}
+
+		internal void CopyNewFileToSrc(string fileName)
+		{
+			var srcFilePath = src + fileName;
+			var dstFilePath = dst + fileName;
+			if (fileSystem.Copy(dstFilePath, srcFilePath))
+			{
+				report.Add(Operation.NewFile, fileName);
+			}
+		}
+
+
+		internal void CopyUpdatedFile(string fileName)
+		{
+			var srcFilePath = src + fileName;
+			var dstFilePath = dst + fileName;
+			if (0 < fileSystem.CompareAge(srcFilePath, dstFilePath))
+			{
+				// move old to oldFilesFolder
+				if (fileSystem.MoveFile(dstFilePath, old + fileName))
+				{
+					// copy updated to dst
+					if (fileSystem.Copy(srcFilePath, dstFilePath))
+					{
+						report.Add(Operation.UpdateFile, fileName);
+					}
+				}
+			}
+		}
 
 		internal void CreateDirectory(string subDir)
 		{
 			string directory = dst + subDir;
+			if (fileSystem.CreateDirectory(directory))
+			{
+				report.Add(Operation.CreateDir, subDir);
+			}
+		}
+
+		internal void CreateSrcDirectory(string subDir)
+		{
+			string directory = src + subDir;
 			if (fileSystem.CreateDirectory(directory))
 			{
 				report.Add(Operation.CreateDir, subDir);
@@ -42,7 +90,7 @@ namespace VersionedCopy.Services
 			}
 		}
 
-		internal void MoveAwayDeleted(string fileName)
+		internal void MoveAwayDeletedFile(string fileName)
 		{
 			string moveAwayFileName = dst + fileName;
 			if (fileSystem.ExistsFile(moveAwayFileName))
@@ -55,17 +103,7 @@ namespace VersionedCopy.Services
 			}
 		}
 
-		internal void CopyNewFile(string fileName)
-		{
-			var srcFilePath = src + fileName;
-			var dstFilePath = dst + fileName;
-			if (fileSystem.Copy(srcFilePath, dstFilePath))
-			{
-				report.Add(Operation.NewFile, fileName);
-			}
-		}
-
-		internal void CopyChangedFile(string fileName)
+		internal void ReplaceChangedFile(string fileName)
 		{
 			var srcFilePath = src + fileName;
 			var dstFilePath = dst + fileName;
@@ -83,22 +121,26 @@ namespace VersionedCopy.Services
 			}
 		}
 
-		internal void CopyUpdatedFile(string fileName)
+		internal void CopyNewerFileToOtherSide(string fileName)
 		{
 			var srcFilePath = src + fileName;
 			var dstFilePath = dst + fileName;
-			if (fileSystem.IsNewer(srcFilePath, dstFilePath))
+			switch (fileSystem.CompareAge(srcFilePath, dstFilePath))
 			{
-				// move old to oldFilesFolder
-				if (fileSystem.MoveFile(dstFilePath, old + fileName))
+				case -1: var temp = srcFilePath; srcFilePath = dstFilePath; dstFilePath = temp; break; // dstFile newer
+				case 1: break; // srcFile newer
+				default: return;
+			}
+			// move old to oldFilesFolder
+			if (fileSystem.MoveFile(dstFilePath, old + fileName))
+			{
+				// copy new to dst
+				if (fileSystem.Copy(srcFilePath, dstFilePath))
 				{
-					// copy updated to dst
-					if (fileSystem.Copy(srcFilePath, dstFilePath))
-					{
-						report.Add(Operation.UpdateFile, fileName);
-					}
+					report.Add(Operation.ReplaceFile, fileName);
 				}
 			}
 		}
 	}
 }
+

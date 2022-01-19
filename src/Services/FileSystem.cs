@@ -75,18 +75,18 @@ namespace VersionedCopy.Services
 			}
 		}
 
-		public bool IsNewer(string source, string destination)
+		public int CompareAge(string source, string destination)
 		{
 			try
 			{
 				var srcFileInfo = new FileInfo(source);
 				var dstFileInfo = new FileInfo(destination);
-				return (srcFileInfo.LastWriteTimeUtc > dstFileInfo.LastWriteTimeUtc);
+				return srcFileInfo.LastWriteTimeUtc.CompareTo(dstFileInfo.LastWriteTimeUtc);
 			}
 			catch (SystemException e)
 			{
 				ErrorOutput.Error(e.Message);
-				return false;
+				return 0;
 			}
 		}
 

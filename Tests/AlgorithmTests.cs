@@ -184,7 +184,23 @@ namespace VersionedCopy.Tests
 			var options = new TestOptions(dirs) { Mode = AlgoMode.Update };
 			Algorithms.Run(options, nullReport, fileSystem, token);
 			partDst.AssertContainsPart(dirs.DestinationDirectory);
-			Assert.IsTrue(fileSystem.IsNewer(updatedFileDst, srcFile));
+			Assert.AreEqual(1, fileSystem.CompareAge(updatedFileDst, srcFile));
+		}
+
+		[TestMethod()]
+		public void SyncTest()
+		{
+			var fileSystem = new VirtualFileSystem();
+			fileSystem.CreateDirectory(dirs.SourceDirectory);
+			var file1 = "1";
+			fileSystem.CreateFile(Path.Combine(dirs.SourceDirectory, file1));
+			var file2 = "2";
+			fileSystem.CreateFile(Path.Combine(dirs.DestinationDirectory, file2));
+
+			var options = new TestOptions(dirs) { Mode = AlgoMode.Sync };
+			Algorithms.Run(options, nullReport, fileSystem, token);
+			Assert.IsTrue(fileSystem.ExistsFile(Path.Combine(dirs.SourceDirectory, file2)));
+			Assert.IsTrue(fileSystem.ExistsFile(Path.Combine(dirs.DestinationDirectory, file1)));
 		}
 
 		private void AssertEmptyDestination(VirtualFileSystem fileSystem)

@@ -4,5 +4,6 @@
 	{
 		Mirror,
 		Update,
+		Sync,
 	}
 }
