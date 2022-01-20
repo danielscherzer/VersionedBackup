@@ -1,6 +1,5 @@
 using CommandLine;
 using System;
-using System.IO;
 using System.Threading;
 using VersionedCopy;
 using VersionedCopy.Interfaces;
@@ -47,7 +46,25 @@ void Run(IOptions options)
 #endif
 
 	var fileSystem = new FileSystem(report, options.DryRun);
-	Algorithms.Run(options, report, fileSystem, cts.Token);
+	if (!fileSystem.ExistsDirectory(options.SourceDirectory))
+	{
+		report.Error($"Source directory '{options.SourceDirectory}' does not exist");
+		return;
+	}
+
+	switch (options.Mode)
+	{
+		case AlgoMode.Mirror:
+			new Mirror(options, report, fileSystem, cts.Token);
+			break;
+		case AlgoMode.Sync:
+			new Sync(options, report, fileSystem, cts.Token);
+			break;
+		case AlgoMode.Update:
+			new Update(options, report, fileSystem, cts.Token);
+			break;
+	}
+
 	if (!options.DryRun)
 	{
 		report.Save(options.OldFilesFolder + "report.json");

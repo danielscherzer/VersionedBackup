@@ -1,6 +1,7 @@
 namespace VersionedCopy.Interfaces
 {
-	public enum Operation {
+	public enum Operation
+	{
 		CreateDir,
 		DeleteDir,
 		DeleteFile,

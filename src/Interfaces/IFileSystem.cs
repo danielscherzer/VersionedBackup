@@ -1,5 +1,3 @@
-using System;
-
 namespace VersionedCopy.Interfaces
 {
 	public interface IFileSystem : IReadOnlyFileSystem

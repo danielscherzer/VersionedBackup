@@ -1,4 +1,3 @@
-using System;
 using VersionedCopy.Interfaces;
 using VersionedCopy.PathHelper;
 

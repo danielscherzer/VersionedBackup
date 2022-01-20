@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +8,7 @@ using VersionedCopy.PathHelper;
 
 namespace VersionedCopyTests.Services
 {
-	internal class VirtualFileSystem : IFileSystem
+	public class VirtualFileSystem : IFileSystem
 	{
 		public int CompareAge(string source, string destination)
 		{
@@ -28,9 +27,9 @@ namespace VersionedCopyTests.Services
 
 		public IEnumerable<string> EnumerateFiles(IEnumerable<string> dirs) =>
 			(from dir in dirs.AsParallel()
-			from file in files.Keys
-			where Path.GetDirectoryName(file) + Path.DirectorySeparatorChar == dir
-			select file).ToArray(); // make copy so we can change it when iterating
+			 from file in files.Keys
+			 where Path.GetDirectoryName(file) + Path.DirectorySeparatorChar == dir
+			 select file).ToArray(); // make copy so we can change it when iterating
 
 		public bool ExistsDirectory(string name) => dirs.ContainsKey(NormalizeDir(name));
 
@@ -47,7 +46,7 @@ namespace VersionedCopyTests.Services
 		}
 
 		public bool MoveFile(string source, string destination)
-{
+		{
 			return files.Remove(source, out var date) && files.TryAdd(destination, date);
 		}
 
@@ -57,7 +56,7 @@ namespace VersionedCopyTests.Services
 		internal bool DeleteFile(string name) => files.Remove(name, out _);
 		internal void UpdateFile(string name) => ++files[name];
 
-		private readonly ConcurrentDictionary<string,int> dirs = new();
+		private readonly ConcurrentDictionary<string, int> dirs = new();
 		private readonly ConcurrentDictionary<string, int> files = new();
 
 		private static string NormalizeDir(string dir) => dir.IncludeTrailingPathDelimiter();
