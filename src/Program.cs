@@ -40,7 +40,7 @@ void Run(IOptions options)
 			break;
 	}
 
-	if (!options.DryRun)
+	if (!options.DryRun && fileSystem.ExistsDirectory(options.OldFilesFolder))
 	{
 		report.Save(options.OldFilesFolder + "report.json");
 	}
