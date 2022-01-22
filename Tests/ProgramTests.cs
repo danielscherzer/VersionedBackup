@@ -17,7 +17,6 @@ namespace VersionedCopy.Program.Tests
 		[DataRow("mirror", "c:\\src", "d:\\dst")]
 		[DataRow("update", "c:\\src", "d:\\dst")]
 		[DataRow("sync", "c:\\src", "d:\\dst")]
-		[DataRow("c:\\src", "d:\\dst")]
 		public void ParseArgumentsTest(params string[] args)
 		{
 			void AllTest(IOptions options)
