@@ -1,6 +1,5 @@
 using CommandLine;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,30 +14,42 @@ namespace VersionedCopy.Program.Tests
 	public class ProgramTests
 	{
 		[DataTestMethod()]
+		[DataRow("mirror", "c:\\src", "d:\\dst")]
+		[DataRow("update", "c:\\src", "d:\\dst")]
+		[DataRow("sync", "c:\\src", "d:\\dst")]
 		[DataRow("c:\\src", "d:\\dst")]
-		[DataRow("c:\\src", "d:\\dst", "--mode=Sync")]
 		public void ParseArgumentsTest(params string[] args)
 		{
-			void Run(IOptions options)
+			void AllTest(IOptions options)
 			{
-				Assert.AreEqual(args[0].IncludeTrailingPathDelimiter(), options.SourceDirectory);
-				Assert.AreEqual(args[1].IncludeTrailingPathDelimiter(), options.DestinationDirectory);
-				if (args.Length > 2) Assert.AreEqual(AlgoMode.Sync, options.Mode);
+				Assert.AreEqual(args[1].IncludeTrailingPathDelimiter(), options.SourceDirectory);
+				Assert.AreEqual(args[2].IncludeTrailingPathDelimiter(), options.DestinationDirectory);
+			}
+			void SyncTest(SyncOptions options)
+			{
+				Assert.AreEqual(args[0], "sync");
+				AllTest(options);
+			}
+			void UpdateTest(UpdateOptions options)
+			{
+				Assert.AreEqual(args[0], "update");
+				AllTest(options);
+			}
+
+			void MirrorTest(MirrorOptions options)
+			{
+				Assert.AreEqual(args[0], "mirror");
+				AllTest(options);
 			}
 			void Error(IEnumerable<Error> errors)
 			{
 				Assert.Fail(string.Join('\n', errors.Select(error => error.ToString())));
 			}
-			try
-			{
-				ParserResult<Options> parserResult = Parser.Default.ParseArguments<Options>(args);
-				parserResult.WithParsed(Run);
-				parserResult.WithNotParsed(Error);
-			}
-			catch (Exception e)
-			{
-				Assert.Fail(e.Message);
-			}
+			Parser.Default.ParseArguments<MirrorOptions, UpdateOptions, SyncOptions>(args)
+				.WithParsed<MirrorOptions>(MirrorTest)
+				.WithParsed<UpdateOptions>(UpdateTest)
+				.WithParsed<SyncOptions>(SyncTest)
+				.WithNotParsed(Error);
 		}
 
 		[TestMethod()]

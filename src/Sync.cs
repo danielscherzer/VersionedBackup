@@ -3,41 +3,57 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using VersionedCopy.Interfaces;
+using VersionedCopy.PathHelper;
 
 namespace VersionedCopy
 {
-	public class Sync : Algorithm
+	public class Sync
 	{
-		public Sync(IOptions options, IReport report, IFileSystem fileSystem, CancellationToken token) : base(options, report, fileSystem, token)
+		public static void Run(AlgorithmEnv env)
 		{
+			var src = env.Options.SourceDirectory.IncludeTrailingPathDelimiter();
+			var dst = env.Options.DestinationDirectory.IncludeTrailingPathDelimiter();
+
+			if (!env.FileSystem.ExistsDirectory(src)) env.Op.CreateSrcDirectory("");
+			if (!env.FileSystem.ExistsDirectory(dst)) env.Op.CreateDirectory("");
+
+			Task<string[]> srcDirs = env.EnumerateDirsAsync(src);
+			Task<string[]> dstDirs = env.EnumerateDirsAsync(dst);
+
+			var srcDirsRelative = srcDirs.Result.ToRelative(src).ToHashSet();
+			var dstDirsRelative = dstDirs.Result.ToRelative(dst).ToHashSet();
+
+			var srcFilesRelative = env.EnumerateRelativeFilesAsync(src, srcDirs.Result);
+			var dstFilesRelative = env.EnumerateRelativeFilesAsync(dst, dstDirs.Result);
+
 			//create missing directories in dst
 			var srcDirSingles = srcDirsRelative.Where(srcDir => !dstDirsRelative.Contains(srcDir));
 			foreach (var subDir in srcDirSingles)
 			{
-				if (token.IsCancellationRequested) return;
+				if (env.Token.IsCancellationRequested) return;
 				//TODO: if in delete log move to old dir
-				op.CreateDirectory(subDir);
+				env.Op.CreateDirectory(subDir);
 			}
 
 			// make sure dst enumeration task has ended before changing directories and files
-			dstFilesRelative.Wait(token);
+			dstFilesRelative.Wait(env.Token);
 
 			// find directories in dst, but not in src
 			var dstDirSingles = dstDirsRelative.Where(dstDir => !srcDirsRelative.Contains(dstDir));
 			// create missing directories in src
 			foreach (var subDir in dstDirSingles)
 			{
-				if (token.IsCancellationRequested) return;
+				if (env.Token.IsCancellationRequested) return;
 				//TODO: if in delete log move to old dir
-				op.CreateSrcDirectory(subDir);
+				env.Op.CreateSrcDirectory(subDir);
 			}
 
 			// find files in src, but not in dst
 			var srcFileSingles = srcFilesRelative.Result.Where(srcFileRelative => !dstFilesRelative.Result.Contains(srcFileRelative));
 			foreach (var fileName in srcFileSingles)
 			{
-				if (token.IsCancellationRequested) return;
-				op.CopyNewFile(fileName);
+				if (env.Token.IsCancellationRequested) return;
+				env.Op.CopyNewFile(fileName);
 				//TODO: if in delete log op.MoveAwayDeleted(fileName);
 			}
 
@@ -45,8 +61,8 @@ namespace VersionedCopy
 			var dstFileSingles = dstFilesRelative.Result.Where(dstFileRelative => !srcFilesRelative.Result.Contains(dstFileRelative));
 			foreach (var fileName in dstFileSingles)
 			{
-				if (token.IsCancellationRequested) return;
-				op.CopyNewFileToSrc(fileName);
+				if (env.Token.IsCancellationRequested) return;
+				env.Op.CopyNewFileToSrc(fileName);
 				//TODO: if in delete log op.MoveAwayDeleted(fileName);
 			}
 
@@ -54,9 +70,9 @@ namespace VersionedCopy
 			srcFilesRelative.Result.IntersectWith(dstFilesRelative.Result);
 			try
 			{
-				Parallel.ForEach(srcFilesRelative.Result, new ParallelOptions { CancellationToken = token }, fileName =>
+				Parallel.ForEach(srcFilesRelative.Result, new ParallelOptions { CancellationToken = env.Token }, fileName =>
 				{
-					op.CopyNewerFileToOtherSide(fileName);
+					env.Op.CopyNewerFileToOtherSide(fileName);
 				});
 			}
 			catch (OperationCanceledException)

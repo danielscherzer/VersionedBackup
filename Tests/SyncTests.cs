@@ -5,21 +5,22 @@ using VersionedCopyTests.Services;
 namespace VersionedCopy.Tests
 {
 	[TestClass()]
-	public class SyncTests : AlgorithmSetup
+	public class SyncTests
 	{
 		[TestMethod()]
 		public void SyncTest()
 		{
 			var fileSystem = new VirtualFileSystem();
-			fileSystem.CreateDirectory(dirs.SourceDirectory);
+			var env = AlgorithmTestSetup.Create(fileSystem);
+			fileSystem.CreateDirectory(env.Options.SourceDirectory);
 			var file1 = "1";
-			fileSystem.CreateFile(Path.Combine(dirs.SourceDirectory, file1));
+			fileSystem.CreateFile(Path.Combine(env.Options.SourceDirectory, file1));
 			var file2 = "2";
-			fileSystem.CreateFile(Path.Combine(dirs.DestinationDirectory, file2));
+			fileSystem.CreateFile(Path.Combine(env.Options.DestinationDirectory, file2));
 
-			_ = new Sync(new TestOptions(dirs), nullReport, fileSystem, token);
-			Assert.IsTrue(fileSystem.ExistsFile(Path.Combine(dirs.SourceDirectory, file2)));
-			Assert.IsTrue(fileSystem.ExistsFile(Path.Combine(dirs.DestinationDirectory, file1)));
+			Sync.Run(env);
+			Assert.IsTrue(fileSystem.ExistsFile(Path.Combine(env.Options.SourceDirectory, file2)));
+			Assert.IsTrue(fileSystem.ExistsFile(Path.Combine(env.Options.DestinationDirectory, file1)));
 		}
 	}
 }

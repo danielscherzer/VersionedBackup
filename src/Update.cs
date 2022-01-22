@@ -1,37 +1,51 @@
 ﻿using System.Linq;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
-using VersionedCopy.Interfaces;
+using VersionedCopy.PathHelper;
 
 namespace VersionedCopy
 {
-	public class Update : Algorithm
+	public class Update
 	{
-		public Update(IOptions options, IReport report, IFileSystem fileSystem, CancellationToken token) : base(options, report, fileSystem, token)
+		public static void Run(AlgorithmEnv env)
 		{
+			var src = env.Options.SourceDirectory.IncludeTrailingPathDelimiter();
+			var dst = env.Options.DestinationDirectory.IncludeTrailingPathDelimiter();
+
+			if (!env.FileSystem.ExistsDirectory(src)) env.Op.CreateSrcDirectory("");
+			if (!env.FileSystem.ExistsDirectory(dst)) env.Op.CreateDirectory("");
+
+			Task<string[]> srcDirs = env.EnumerateDirsAsync(src);
+			Task<string[]> dstDirs = env.EnumerateDirsAsync(dst);
+
+			var srcDirsRelative = srcDirs.Result.ToRelative(src).ToHashSet();
+			var dstDirsRelative = dstDirs.Result.ToRelative(dst).ToHashSet();
+
+			var srcFilesRelative = env.EnumerateRelativeFilesAsync(src, srcDirs.Result);
+			var dstFilesRelative = env.EnumerateRelativeFilesAsync(dst, dstDirs.Result);
+
 			//create missing directories in dst
 			var newDirs = srcDirsRelative.Where(srcDir => !dstDirsRelative.Contains(srcDir));
 			foreach (var subDir in newDirs)
 			{
-				if (token.IsCancellationRequested) return;
-				op.CreateDirectory(subDir);
+				if (env.Token.IsCancellationRequested) return;
+				env.Op.CreateDirectory(subDir);
 			}
 
 			// make sure dst enumeration task has ended before changing files
-			dstFilesRelative.Wait(token);
+			dstFilesRelative.Wait(env.Token);
 
 			try
 			{
-				Parallel.ForEach(srcFilesRelative.Result, new ParallelOptions { CancellationToken = token }, fileName =>
+				Parallel.ForEach(srcFilesRelative.Result, new ParallelOptions { CancellationToken = env.Token }, fileName =>
 				{
 					if (dstFilesRelative.Result.Contains(fileName))
 					{
-						op.CopyUpdatedFile(fileName);
+						env.Op.CopyUpdatedFile(fileName);
 					}
 					else
 					{
-						op.CopyNewFile(fileName);
+						env.Op.CopyNewFile(fileName);
 					}
 				});
 			}

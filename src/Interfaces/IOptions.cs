@@ -7,6 +7,5 @@ namespace VersionedCopy.Interfaces
 		IEnumerable<string> IgnoreDirectories { get; }
 		IEnumerable<string> IgnoreFiles { get; }
 		bool DryRun { get; }
-		public AlgoMode Mode { get; }
 	}
 }

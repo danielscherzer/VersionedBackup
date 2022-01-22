@@ -11,7 +11,7 @@ namespace VersionedCopy.Services
 	public class Options : IOptions
 	{
 		public Options(string sourceDirectory, string destinationDirectory
-			, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, bool dryRun, AlgoMode mode)
+			, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, bool dryRun)
 		{
 			if (sourceDirectory is null) return;
 			if (destinationDirectory is null) return;
@@ -22,7 +22,6 @@ namespace VersionedCopy.Services
 			IgnoreDirectories = (ignoreDirectories ?? throw new ArgumentNullException(nameof(ignoreDirectories))).Select(dir => dir.NormalizePathDelimiter().IncludeTrailingPathDelimiter());
 			IgnoreFiles = (ignoreFiles ?? throw new ArgumentNullException(nameof(ignoreFiles))).Select(file => file.NormalizePathDelimiter());
 			DryRun = dryRun;
-			Mode = mode;
 		}
 
 		[Value(0, Required = true, HelpText = "The source directory of the to copy operation.")]
@@ -39,9 +38,6 @@ namespace VersionedCopy.Services
 
 		[Option(longName: "dryRun", Default = false, Required = false, HelpText = "Only list operations. Do not change file system.")]
 		public bool DryRun { get; }
-
-		[Option(longName: "mode", Default = AlgoMode.Mirror, Required = false, HelpText = "Choose copy mode from mirror source to destination, or sync.")]
-		public AlgoMode Mode { get; } = AlgoMode.Mirror;
 
 		public string OldFilesFolder { get; } = "";
 	}

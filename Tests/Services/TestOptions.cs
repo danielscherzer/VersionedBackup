@@ -8,10 +8,7 @@ namespace VersionedCopyTests.Services
 	{
 		private readonly IDirectories dirs;
 
-		public TestOptions(IDirectories dirs)
-		{
-			this.dirs = dirs;
-		}
+		public TestOptions(IDirectories dirs) => this.dirs = dirs;
 
 		public IEnumerable<string> IgnoreDirectories => Enumerable.Empty<string>();
 		public IEnumerable<string> IgnoreFiles => Enumerable.Empty<string>();
@@ -19,6 +16,5 @@ namespace VersionedCopyTests.Services
 		public string DestinationDirectory => dirs.DestinationDirectory;
 		public string OldFilesFolder => dirs.OldFilesFolder;
 		public string SourceDirectory => dirs.SourceDirectory;
-		public AlgoMode Mode { get; set; } = AlgoMode.Mirror;
 	}
 }
