@@ -9,7 +9,7 @@ internal class UpdateAssembly
 	private readonly string updateArchive;
 	private readonly Task<bool> updateTask;
 	private readonly Assembly assembly;
-	private string tempDir;
+	private readonly string tempDir;
 
 	public UpdateAssembly()
 	{
@@ -17,15 +17,16 @@ internal class UpdateAssembly
 		tempDir = Path.Combine(Path.GetTempPath(), nameof(VersionedCopy));
 		Directory.CreateDirectory(tempDir);
 		updateArchive = Path.Combine(tempDir, "update.zip");
+		Console.WriteLine("Checking for new version...");
 		updateTask = UpdateTools.CheckDownloadNewVersionAsync("danielScherzer", "VersionedCopy"
 			, assembly.GetName().Version, updateArchive);
-		var v = assembly.GetName().Version;
 	}
 
-	internal async void CheckAndExecuteUpdateAsync()
+	internal void CheckAndExecuteUpdateAsync()
 	{
-		if (await updateTask)
+		if (updateTask.Result)
 		{
+			Console.WriteLine("New version found. Starting update...");
 			var installer = Path.Combine(tempDir, UpdateTools.DownloadExtractInstallerToAsync(tempDir).Result);
 			var destinationDir = Path.GetDirectoryName(assembly.Location);
 			UpdateTools.StartInstall(installer, updateArchive, destinationDir);

@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.IO;
+using VersionedCopy.PathHelper;
 
 namespace VersionedCopyTests.Services
 {
@@ -8,7 +9,8 @@ namespace VersionedCopyTests.Services
 	{
 		public FileSystemPart(VirtualFileSystem fileSystem, string root, int seed, string dirPrefix = "")
 		{
-			int relativeStart = root.Length + 1;
+			root = root.IncludeTrailingPathDelimiter();
+			int relativeStart = root.Length;
 			fileSystem.RndFill(root, seed, dirPrefix, path => subDirs.Add(path[relativeStart..]), path => files.Add(path[relativeStart..]));
 			this.fileSystem = fileSystem;
 		}

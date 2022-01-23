@@ -10,15 +10,22 @@ namespace VersionedCopy.Services
 {
 	public class Options : IOptions
 	{
-		public Options(string sourceDirectory, string destinationDirectory
+		public Options(string sourceDirectory, string destinationDirectory, string oldFilesFolder
 			, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, bool dryRun)
 		{
 			if (sourceDirectory is null) return;
 			if (destinationDirectory is null) return;
 
-			SourceDirectory = Path.GetFullPath(sourceDirectory).IncludeTrailingPathDelimiter();
-			DestinationDirectory = Path.GetFullPath(destinationDirectory).IncludeTrailingPathDelimiter();
-			OldFilesFolder = $"{DestinationDirectory[0..^1]}.old{Path.DirectorySeparatorChar}{DateTime.Now:yyyy-MM-dd_HHmmss}{Path.DirectorySeparatorChar}";
+			SourceDirectory = (sourceDirectory).IncludeTrailingPathDelimiter();
+			DestinationDirectory = (destinationDirectory).IncludeTrailingPathDelimiter();
+			if (string.IsNullOrEmpty(oldFilesFolder))
+			{
+				OldFilesFolder = $"{DestinationDirectory[0..^1]}.old{Path.DirectorySeparatorChar}{DateTime.Now:yyyy-MM-dd_HHmmss}{Path.DirectorySeparatorChar}";
+			}
+			else
+			{
+				OldFilesFolder = oldFilesFolder.IncludeTrailingPathDelimiter();
+			}
 			IgnoreDirectories = (ignoreDirectories ?? throw new ArgumentNullException(nameof(ignoreDirectories))).Select(dir => dir.NormalizePathDelimiter().IncludeTrailingPathDelimiter());
 			IgnoreFiles = (ignoreFiles ?? throw new ArgumentNullException(nameof(ignoreFiles))).Select(file => file.NormalizePathDelimiter());
 			DryRun = dryRun;
@@ -30,6 +37,9 @@ namespace VersionedCopy.Services
 		[Value(1, Required = true, HelpText = "The destination directory of the copy operation.")]
 		public string DestinationDirectory { get; } = "";
 
+		[Value(2, Required = false, HelpText = "The backup directory that will contain any replaced (old) directories or files.")]
+		public string OldFilesFolder { get; } = "";
+
 		[Option(longName: "ignoreDirectories", Required = false, HelpText = "A list of ignored files.")]
 		public IEnumerable<string> IgnoreDirectories { get; } = Enumerable.Empty<string>();
 
@@ -38,7 +48,5 @@ namespace VersionedCopy.Services
 
 		[Option(longName: "dryRun", Default = false, Required = false, HelpText = "Only list operations. Do not change file system.")]
 		public bool DryRun { get; }
-
-		public string OldFilesFolder { get; } = "";
 	}
 }

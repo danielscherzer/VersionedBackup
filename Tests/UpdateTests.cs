@@ -18,6 +18,20 @@ namespace VersionedCopy.Tests
 			Assert.IsTrue(fileSystem.ExistsDirectory(env.Options.DestinationDirectory));
 		}
 
+		//[DataTestMethod]
+		//[DynamicData(nameof(GetData), DynamicDataSourceType.Method)]
+		//public void Test_Add_DynamicData_Method(int a, int b, int expected)
+		//{
+		//	var actual = MathHelper.Add(a, b);
+		//	Assert.AreEqual(expected, actual);
+		//}
+
+		//public static IEnumerable<object[]> GetData()
+		//{
+		//	var fileSystem = new VirtualFileSystem();
+		//	yield return new object[] { 1, 1, 2 };
+		//}
+
 		[TestMethod()]
 		public void RunCopyDirsTest()
 		{
