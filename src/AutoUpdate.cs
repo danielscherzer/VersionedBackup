@@ -4,14 +4,14 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 
-internal class UpdateAssembly
+internal class AutoUpdate
 {
 	private readonly string updateArchive;
 	private readonly Task<bool> updateTask;
 	private readonly Assembly assembly;
 	private readonly string tempDir;
 
-	public UpdateAssembly()
+	public AutoUpdate()
 	{
 		assembly = Assembly.GetExecutingAssembly();
 		tempDir = Path.Combine(Path.GetTempPath(), nameof(VersionedCopy));

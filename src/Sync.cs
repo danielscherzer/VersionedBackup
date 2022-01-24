@@ -1,8 +1,6 @@
 ﻿using System.Linq;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
-using VersionedCopy.Interfaces;
 using VersionedCopy.PathHelper;
 
 namespace VersionedCopy
@@ -13,9 +11,6 @@ namespace VersionedCopy
 		{
 			var src = env.Options.SourceDirectory.IncludeTrailingPathDelimiter();
 			var dst = env.Options.DestinationDirectory.IncludeTrailingPathDelimiter();
-
-			if (!env.FileSystem.ExistsDirectory(src)) env.Op.CreateSrcDirectory("");
-			if (!env.FileSystem.ExistsDirectory(dst)) env.Op.CreateDirectory("");
 
 			Task<string[]> srcDirs = env.EnumerateDirsAsync(src);
 			Task<string[]> dstDirs = env.EnumerateDirsAsync(dst);

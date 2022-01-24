@@ -13,6 +13,7 @@ namespace VersionedCopy.Tests
 			var fileSystem = new VirtualFileSystem();
 			var env = AlgorithmTestSetup.Create(fileSystem);
 			fileSystem.CreateDirectory(env.Options.SourceDirectory);
+			fileSystem.CreateDirectory(env.Options.DestinationDirectory);
 			var file1 = "1";
 			fileSystem.CreateFile(Path.Combine(env.Options.SourceDirectory, file1));
 			var file2 = "2";

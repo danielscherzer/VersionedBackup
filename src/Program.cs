@@ -4,6 +4,7 @@ using System.Threading;
 using VersionedCopy;
 using VersionedCopy.Interfaces;
 using VersionedCopy.Services;
+using Zenseless.Patterns;
 
 static void Run(IOptions options, Report report, CancellationToken token, Action<AlgorithmEnv> algo)
 {
@@ -37,10 +38,13 @@ Console.CancelKeyPress += (_, args) =>
 	args.Cancel = true; // means to continue the process!, no hard cancel, but give process time to cleanup
 };
 
+//ServiceLocator.AddService<IFileSystem>(new FileSystem(report, options.DryRun));
+
 Parser.Default.ParseArguments<MirrorOptions, UpdateOptions, SyncOptions>(args)
 	.WithParsed<MirrorOptions>(options => Run(options, report, cts.Token, Mirror.Run))
 	.WithParsed<UpdateOptions>(options => Run(options, report, cts.Token, Update.Run))
-	.WithParsed<SyncOptions>(options => Run(options, report, cts.Token, Sync.Run));
+	.WithParsed<SyncOptions>(options => Run(options, report, cts.Token, Sync.Run))
+	.WithParsed<StoreStateOptions>(options => StoreState.Run(options.Directory, options.DatabaseFileName, options.IgnoreDirectories, options.IgnoreFiles));
 
 #if !DEBUG
 update.CheckAndExecuteUpdateAsync();

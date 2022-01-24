@@ -1,9 +1,11 @@
+using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 using VersionedCopy.Interfaces;
 using VersionedCopy.PathHelper;
 
 namespace VersionedCopy.Services
 {
-	public class FileSystemOperations
+	public class Operations
 	{
 		private readonly IFileSystem fileSystem;
 		private readonly IReport report;
@@ -11,14 +13,15 @@ namespace VersionedCopy.Services
 		private readonly string dst;
 		private readonly string old;
 
-		public FileSystemOperations(IReport report, IDirectories directories, IFileSystem fileSystem)
+		public Operations(IReport report, IDirectories directories, IFileSystem fileSystem)
 		{
 			this.report = report;
 			this.fileSystem = fileSystem;
-			src = directories.SourceDirectory.IncludeTrailingPathDelimiter();
-			dst = directories.DestinationDirectory.IncludeTrailingPathDelimiter();
-			old = directories.OldFilesFolder.IncludeTrailingPathDelimiter();
+			src = directories.SourceDirectory;
+			dst = directories.DestinationDirectory;
+			old = directories.OldFilesFolder;
 		}
+
 		internal void CopyNewFile(string fileName)
 		{
 			var srcFilePath = src + fileName;

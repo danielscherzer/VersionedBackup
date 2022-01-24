@@ -19,7 +19,7 @@ namespace VersionedCopy
 		/// <param name="token"><see cref="CancellationToken"/></param>
 		public AlgorithmEnv(IOptions options, IReport report, IFileSystem fileSystem, CancellationToken token)
 		{
-			Op = new FileSystemOperations(report, options, fileSystem);
+			Op = new Operations(report, options, fileSystem);
 			Options = options;
 			FileSystem = fileSystem;
 			Token = token;
@@ -42,6 +42,6 @@ namespace VersionedCopy
 		public IOptions Options { get; }
 		public IFileSystem FileSystem { get; }
 		public CancellationToken Token { get; }
-		public FileSystemOperations Op { get; }
+		public Operations Op { get; }
 	}
 }

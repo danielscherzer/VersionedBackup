@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace VersionedCopy.Services
 {
-	class Benchmark : IDisposable
+	public class Benchmark : IDisposable
 	{
 		public Benchmark(Action<string> print, string message = "")
 		{
@@ -13,7 +13,7 @@ namespace VersionedCopy.Services
 
 		public Benchmark(string message = "")
 		{
-			Print = message => Console.WriteLine(message);
+			Print = message => Debug.WriteLine(message);
 			Message = message;
 		}
 

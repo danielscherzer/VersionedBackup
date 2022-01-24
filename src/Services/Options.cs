@@ -13,9 +13,6 @@ namespace VersionedCopy.Services
 		public Options(string sourceDirectory, string destinationDirectory, string oldFilesFolder
 			, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, bool dryRun)
 		{
-			if (sourceDirectory is null) return;
-			if (destinationDirectory is null) return;
-
 			SourceDirectory = (sourceDirectory).IncludeTrailingPathDelimiter();
 			DestinationDirectory = (destinationDirectory).IncludeTrailingPathDelimiter();
 			if (string.IsNullOrEmpty(oldFilesFolder))
@@ -40,10 +37,10 @@ namespace VersionedCopy.Services
 		[Value(2, Required = false, HelpText = "The backup directory that will contain any replaced (old) directories or files.")]
 		public string OldFilesFolder { get; } = "";
 
-		[Option(longName: "ignoreDirectories", Required = false, HelpText = "A list of ignored files.")]
+		[Option(longName: "ignoreDirectories", Required = false, HelpText = "A list of ignored directories.")]
 		public IEnumerable<string> IgnoreDirectories { get; } = Enumerable.Empty<string>();
 
-		[Option(longName: "ignoreFiles", Required = false, HelpText = "A list of ignored directories.")]
+		[Option(longName: "ignoreFiles", Required = false, HelpText = "A list of ignored files.")]
 		public IEnumerable<string> IgnoreFiles { get; } = Enumerable.Empty<string>();
 
 		[Option(longName: "dryRun", Default = false, Required = false, HelpText = "Only list operations. Do not change file system.")]
