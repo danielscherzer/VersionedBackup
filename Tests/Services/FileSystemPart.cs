@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using VersionedCopy.PathHelper;
 
-namespace VersionedCopyTests.Services
+namespace VersionedCopy.Tests.Services
 {
 	class FileSystemPart
 	{

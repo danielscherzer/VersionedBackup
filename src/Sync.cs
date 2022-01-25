@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using System;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using VersionedCopy.PathHelper;
 
@@ -66,7 +66,7 @@ namespace VersionedCopy
 			try
 			{
 				//Parallel.ForEach(srcFilesRelative.Result, new ParallelOptions { CancellationToken = env.Token }, fileName =>
-				foreach(var fileName in srcFilesRelative.Result)
+				foreach (var fileName in srcFilesRelative.Result)
 				{
 					env.Op.CopyNewerFileToOtherSide(fileName);
 				}//);

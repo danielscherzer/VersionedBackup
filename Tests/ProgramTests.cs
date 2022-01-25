@@ -1,5 +1,4 @@
 using CommandLine;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -7,7 +6,7 @@ using System.Linq;
 using VersionedCopy.Interfaces;
 using VersionedCopy.PathHelper;
 using VersionedCopy.Services;
-using VersionedCopyTests.Services;
+using VersionedCopy.Tests.Services;
 
 namespace VersionedCopy.Tests
 {
@@ -67,13 +66,6 @@ namespace VersionedCopy.Tests
 					report.Error("");
 				}
 			});
-		}
-
-		[DataTestMethod()]
-		[DataRow("sync", "d:\\daten", "e:\\daten", "--dryRun", "--ignoreDirectories", ".vs", "bin", "obj", "TestResults", "--ignoreFiles", "desktop.ini", @"Visual Studio 2022\Visualizers\attribcache140.bin")]
-		public void RunFullTest(params string[] args)
-		{
-			Program.Main(args);
 		}
 	}
 }

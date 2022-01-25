@@ -7,7 +7,7 @@ namespace VersionedCopy.Services
 	public class MirrorOptions : Options
 	{
 		public MirrorOptions(string sourceDirectory, string destinationDirectory, string oldFilesFolder, IEnumerable<string> ignoreDirectories
-			, IEnumerable<string> ignoreFiles, bool dryRun) 
+			, IEnumerable<string> ignoreFiles, bool dryRun)
 			: base(sourceDirectory, destinationDirectory, oldFilesFolder, ignoreDirectories, ignoreFiles, dryRun)
 		{
 		}

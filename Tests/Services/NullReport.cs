@@ -1,7 +1,7 @@
 using System;
 using VersionedCopy.Interfaces;
 
-namespace VersionedCopyTests.Services
+namespace VersionedCopy.Tests.Services
 {
 	internal class NullReport : IReport
 	{

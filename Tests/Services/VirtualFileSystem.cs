@@ -6,7 +6,7 @@ using System.Xml.Linq;
 using VersionedCopy.Interfaces;
 using VersionedCopy.PathHelper;
 
-namespace VersionedCopyTests.Services
+namespace VersionedCopy.Tests.Services
 {
 	public class VirtualFileSystem : IFileSystem
 	{

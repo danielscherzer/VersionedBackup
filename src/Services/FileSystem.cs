@@ -82,7 +82,7 @@ namespace VersionedCopy.Services
 				var srcFileInfo = new FileInfo(source);
 				var dstFileInfo = new FileInfo(destination);
 				TimeSpan writeDiff = srcFileInfo.LastWriteTimeUtc - dstFileInfo.LastWriteTimeUtc;
-				if(Math.Abs(writeDiff.TotalSeconds) < 3) return 0;
+				if (Math.Abs(writeDiff.TotalSeconds) < 3) return 0;
 				return Math.Sign(writeDiff.TotalSeconds);
 			}
 			catch (SystemException e)

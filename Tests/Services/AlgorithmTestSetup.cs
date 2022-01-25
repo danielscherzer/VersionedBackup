@@ -1,15 +1,14 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using System.Threading;
-using VersionedCopy;
 using VersionedCopy.Services;
 
-namespace VersionedCopyTests.Services
+namespace VersionedCopy.Tests.Services
 {
 	public static class AlgorithmTestSetup
 	{
 		public static AlgorithmEnv Create(VirtualFileSystem fs) => new(
-			new Options("src", "dst", "old", Enumerable.Empty<string>(), Enumerable.Empty<string>(), false), 
+			new Options("src", "dst", "old", Enumerable.Empty<string>(), Enumerable.Empty<string>(), false),
 			new NullReport(), fs, new CancellationToken());
 
 		public static void AssertEmptyDestination(this AlgorithmEnv env)

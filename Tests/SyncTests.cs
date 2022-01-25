@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
-using VersionedCopyTests.Services;
+using static VersionedCopy.Tests.Services.FileSystemHelper;
 
 namespace VersionedCopy.Tests
 {
@@ -10,18 +10,31 @@ namespace VersionedCopy.Tests
 		[TestMethod()]
 		public void SyncTest()
 		{
-			var fileSystem = new VirtualFileSystem();
-			var env = AlgorithmTestSetup.Create(fileSystem);
-			fileSystem.CreateDirectory(env.Options.SourceDirectory);
-			fileSystem.CreateDirectory(env.Options.DestinationDirectory);
-			var file1 = "1";
-			fileSystem.CreateFile(Path.Combine(env.Options.SourceDirectory, file1));
-			var file2 = "2";
-			fileSystem.CreateFile(Path.Combine(env.Options.DestinationDirectory, file2));
+			var src = Path.Combine(Root, "src");
+			var dst = Path.Combine(Root, "dst");
+			Create(src, "F1");
+			Create(src, "F2");
+			Create(src, "a", "F1");
+			Create(src, "b\\");
 
-			Sync.Run(env);
-			Assert.IsTrue(fileSystem.ExistsFile(Path.Combine(env.Options.SourceDirectory, file2)));
-			Assert.IsTrue(fileSystem.ExistsFile(Path.Combine(env.Options.DestinationDirectory, file1)));
+			Create(dst, "F1");
+			Create(dst, "F3");
+			Create(dst, "x\\");
+
+			Program.Main(new string[] { "sync", src, dst });
+
+			Exists(src, "F3");
+			Exists(src, "x\\");
+
+			Exists(dst, "F2");
+			Exists(dst, "a", "F1");
+			Exists(dst, "b\\");
+		}
+
+		[TestCleanup]
+		public void TestCleanup()
+		{
+			if (Directory.Exists(Root)) Directory.Delete(Root, true);
 		}
 	}
 }

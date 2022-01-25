@@ -1,9 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using VersionedCopy.Services;
 
 namespace VersionedCopy.Tests
 {
@@ -16,7 +11,7 @@ namespace VersionedCopy.Tests
 			//for(int i = 0; i < 100; ++i)
 			//{
 			//	Stopwatch stopwatch = Stopwatch.StartNew();
-				//StoreState.Run(@"d:\daten", @"d:\test.json", Enumerable.Empty<string>(), Enumerable.Empty<string>());
+			//StoreState.Run(@"d:\daten", @"d:\test.json", Enumerable.Empty<string>(), Enumerable.Empty<string>());
 			//	//stopwatch.Benchmark("store state run");
 			//}
 		}

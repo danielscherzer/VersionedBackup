@@ -1,7 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 using System.Linq;
-using VersionedCopyTests.Services;
+using VersionedCopy.Tests.Services;
+using static VersionedCopy.Tests.Services.FileSystemHelper;
 
 namespace VersionedCopy.Tests
 {
@@ -143,6 +144,36 @@ namespace VersionedCopy.Tests
 			Update.Run(env);
 			partDst.AssertContainsPart(env.Options.DestinationDirectory);
 			Assert.AreEqual(1, fileSystem.CompareAge(updatedFileDst, srcFile));
+		}
+
+		[TestMethod()]
+		public void UpdateTest2()
+		{
+			var src = Path.Combine(Root, "src");
+			var dst = Path.Combine(Root, "dst");
+			Create(src, "F1");
+			Create(src, "F2");
+			Create(src, "a", "F1");
+			Create(src, "b\\");
+
+			Create(dst, "F1");
+			Create(dst, "F3");
+			Create(dst, "x\\");
+
+			Program.Main(new string[] { "update", src, dst });
+
+			Exists(dst, "F3");
+			Exists(dst, "x\\");
+
+			Exists(dst, "F2");
+			Exists(dst, "a", "F1");
+			Exists(dst, "b\\");
+		}
+
+		[TestCleanup]
+		public void TestCleanup()
+		{
+			if (Directory.Exists(Root)) Directory.Delete(Root, true);
 		}
 	}
 }
