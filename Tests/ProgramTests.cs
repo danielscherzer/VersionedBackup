@@ -1,4 +1,5 @@
 using CommandLine;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using VersionedCopy.PathHelper;
 using VersionedCopy.Services;
 using VersionedCopyTests.Services;
 
-namespace VersionedCopy.Program.Tests
+namespace VersionedCopy.Tests
 {
 	[TestClass()]
 	public class ProgramTests
@@ -17,12 +18,15 @@ namespace VersionedCopy.Program.Tests
 		[DataRow("mirror", "c:\\src", "d:\\dst")]
 		[DataRow("update", "c:\\src", "d:\\dst")]
 		[DataRow("sync", "c:\\src", "d:\\dst")]
+		[DataRow("sync", "d:\\daten", "e:\\daten", "--dryRun")]
+		[DataRow("sync", "d:\\daten", "e:\\daten", "--dryRun", "--ignoreDirectories", ".vs", "bin", "obj", "TestResults", "--ignoreFiles", "desktop.ini", @"Visual Studio 2022\Visualizers\attribcache140.bin")]
 		public void ParseArgumentsTest(params string[] args)
 		{
 			void AllTest(IOptions options)
 			{
 				Assert.AreEqual(args[1].IncludeTrailingPathDelimiter(), options.SourceDirectory);
 				Assert.AreEqual(args[2].IncludeTrailingPathDelimiter(), options.DestinationDirectory);
+				if (args.Length > 3) Assert.IsTrue(options.DryRun);
 			}
 			void SyncTest(SyncOptions options)
 			{
@@ -63,6 +67,13 @@ namespace VersionedCopy.Program.Tests
 					report.Error("");
 				}
 			});
+		}
+
+		[DataTestMethod()]
+		[DataRow("sync", "d:\\daten", "e:\\daten", "--dryRun", "--ignoreDirectories", ".vs", "bin", "obj", "TestResults", "--ignoreFiles", "desktop.ini", @"Visual Studio 2022\Visualizers\attribcache140.bin")]
+		public void RunFullTest(params string[] args)
+		{
+			Program.Main(args);
 		}
 	}
 }

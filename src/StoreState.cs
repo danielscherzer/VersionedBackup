@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
+using VersionedCopy.PathHelper;
+using VersionedCopy.Services;
 
 namespace VersionedCopy
 {
-	[Serializable]
 	public class FileState
 	{
 		public FileState(string name, DateTime lastWriteTime)
@@ -22,7 +22,6 @@ namespace VersionedCopy
 		public override string ToString() => Name;
 	}
 
-	[Serializable]
 	public class DirectoryState
 	{
 		public DirectoryState(string name)
@@ -31,8 +30,8 @@ namespace VersionedCopy
 		}
 
 		public string Name { get; }
-		public HashSet<DirectoryState> Directories { get; } = new();
-		public HashSet<FileState> Files { get; } = new();
+		public List<DirectoryState> Directories { get; } = new();
+		public List<FileState> Files { get; } = new();
 		public override string ToString() => Name;
 	}
 
@@ -44,24 +43,24 @@ namespace VersionedCopy
 			if (!root.Exists) return;
 			var rootState = new DirectoryState(root.Name);
 
-			var stack = new Stack<(DirectoryInfo, DirectoryState)>();
-			stack.Push((root, rootState));
-			while (stack.Count > 0)
+			var subDirs = new Stack<(DirectoryInfo, DirectoryState)>();
+			subDirs.Push((root, rootState));
+			while (subDirs.Count > 0)
 			{
-				(DirectoryInfo dir, DirectoryState dirState) = stack.Pop();
+				(DirectoryInfo dir, DirectoryState dirState) = subDirs.Pop();
 				try
 				{
 					foreach (var file in dir.EnumerateFiles())
 					{
-						if (ignoreFiles.Contains(file.Name)) continue;
+						//if (ignoreFiles.Contains(file.Name)) continue;
 						dirState.Files.Add(new FileState(file.Name, file.LastWriteTimeUtc));
 					}
 					foreach (var subDir in dir.EnumerateDirectories())
 					{
-						if (ignoreDirectories.Contains(subDir.Name + Path.DirectorySeparatorChar)) continue;
+						//if (ignoreDirectories.Contains(subDir.Name + Path.DirectorySeparatorChar)) continue;
 						var subDirState = new DirectoryState(subDir.Name);
 						dirState.Directories.Add(subDirState);
-						stack.Push((subDir, subDirState));
+						subDirs.Push((subDir, subDirState));
 					}
 				}
 				catch (Exception ex)
@@ -69,8 +68,23 @@ namespace VersionedCopy
 					Debug.WriteLine(ex.Message);
 				}
 			}
-			string json = JsonConvert.SerializeObject(rootState, Formatting.Indented);
-			File.WriteAllText(databaseFileName, json);
+			//string json = JsonConvert.SerializeObject(rootState, Formatting.Indented);
+			//File.WriteAllText(databaseFileName, json);
+		}
+
+		public static void Run2(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
+		{
+			directory = directory.IncludeTrailingPathDelimiter();
+			Stopwatch stopwatch = Stopwatch.StartNew();
+			HashSet<string> dirs = Directory.GetDirectories(directory, "*.*", SearchOption.AllDirectories)
+				.ToRelative(directory).Ignore(ignoreDirectories).ToHashSet();
+			stopwatch.Benchmark("dirs");
+			var files = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories).Ignore(ignoreFiles);
+			stopwatch.Benchmark("files");
+			Dictionary<string, DateTime> fileInfo = files.ToDictionary(file => file[directory.Length..], file => new FileInfo(file).LastWriteTimeUtc);
+			stopwatch.Benchmark("toDic");
+			//string json = JsonConvert.SerializeObject(state, Formatting.Indented);
+			//File.WriteAllText(databaseFileName, json);
 		}
 	}
 }

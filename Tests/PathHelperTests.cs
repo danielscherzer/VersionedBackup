@@ -1,7 +1,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.RegularExpressions;
+using VersionedCopy.PathHelper;
 
-namespace VersionedCopy.PathHelper.Tests
+namespace VersionedCopy.Tests
 {
 	[TestClass()]
 	public class PathHelperTests

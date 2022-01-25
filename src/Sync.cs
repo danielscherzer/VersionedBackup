@@ -65,10 +65,11 @@ namespace VersionedCopy
 			srcFilesRelative.Result.IntersectWith(dstFilesRelative.Result);
 			try
 			{
-				Parallel.ForEach(srcFilesRelative.Result, new ParallelOptions { CancellationToken = env.Token }, fileName =>
+				//Parallel.ForEach(srcFilesRelative.Result, new ParallelOptions { CancellationToken = env.Token }, fileName =>
+				foreach(var fileName in srcFilesRelative.Result)
 				{
 					env.Op.CopyNewerFileToOtherSide(fileName);
-				});
+				}//);
 			}
 			catch (OperationCanceledException)
 			{
