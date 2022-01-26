@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
 using System.Threading;
 using static VersionedCopy.Tests.Services.FileSystemHelper;
 
@@ -11,9 +10,9 @@ namespace VersionedCopy.Tests
 		[TestMethod()]
 		public void MirrorTest()
 		{
-			var src = Path.Combine(Root, "src");
-			var dst = Path.Combine(Root, "dst");
-			var old = Path.Combine(Root, "old");
+			var src = ToPath("src");
+			var dst = ToPath("dst");
+			var old = ToPath("old");
 			Create(src, "F1");
 			Create(src, "F2");
 			Create(src, "a", "F1");
@@ -39,9 +38,10 @@ namespace VersionedCopy.Tests
 		[TestMethod()]
 		public void MirrorNewerDstTest()
 		{
-			var src = Path.Combine(Root, "src");
-			var dst = Path.Combine(Root, "dst");
-			var old = Path.Combine(Root, "old");
+			var src = ToPath("src");
+			var dst = ToPath("dst");
+			var old = ToPath("old");
+
 			var srcF1 = Create(src, "a\\b\\c\\F1");
 			Thread.Sleep(5000);
 			var dstF1 = Create(dst, "a\\b\\c\\F1");
@@ -57,7 +57,7 @@ namespace VersionedCopy.Tests
 		[TestCleanup]
 		public void TestCleanup()
 		{
-			if (Directory.Exists(Root)) Directory.Delete(Root, true);
+			Cleanup();
 		}
 	}
 }

@@ -1,12 +1,10 @@
 using CommandLine;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using VersionedCopy.Interfaces;
 using VersionedCopy.PathHelper;
 using VersionedCopy.Services;
-using VersionedCopy.Tests.Services;
 
 namespace VersionedCopy.Tests
 {
@@ -52,20 +50,6 @@ namespace VersionedCopy.Tests
 				.WithParsed<UpdateOptions>(UpdateTest)
 				.WithParsed<SyncOptions>(SyncTest)
 				.WithNotParsed(Error);
-		}
-
-		[TestMethod()]
-		public void RunEmptyTest()
-		{
-			var fileSystem = new VirtualFileSystem();
-			var report = new NullReport();
-			Assert.ThrowsException<Exception>(() =>
-			{
-				if (!fileSystem.ExistsDirectory(""))
-				{
-					report.Error("");
-				}
-			});
 		}
 	}
 }

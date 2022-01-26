@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
 using static VersionedCopy.Tests.Services.FileSystemHelper;
 
 namespace VersionedCopy.Tests
@@ -10,8 +9,8 @@ namespace VersionedCopy.Tests
 		[TestMethod()]
 		public void SyncTest()
 		{
-			var src = Path.Combine(Root, "src");
-			var dst = Path.Combine(Root, "dst");
+			var src = ToPath("src");
+			var dst = ToPath("dst");
 			Create(src, "F1");
 			Create(src, "F2");
 			Create(src, "a", "F1");
@@ -34,7 +33,7 @@ namespace VersionedCopy.Tests
 		[TestCleanup]
 		public void TestCleanup()
 		{
-			if (Directory.Exists(Root)) Directory.Delete(Root, true);
+			Cleanup();
 		}
 	}
 }

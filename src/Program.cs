@@ -9,7 +9,7 @@ namespace VersionedCopy
 {
 	public class Program
 	{
-		static void Run(IOptions options, Report report, CancellationToken token, Action<AlgorithmEnv> algo)
+		private static void Run(IOptions options, Report report, CancellationToken token, Action<AlgorithmEnv> algo)
 		{
 
 			if (options.SourceDirectory == options.DestinationDirectory) throw new ArgumentException("Source and destination must be different!");
