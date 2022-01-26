@@ -1,7 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
 using System.IO;
 
-namespace VersionedCopy.Tests.Services
+namespace VersionedCopy.Tests
 {
 	internal static class FileSystemHelper
 	{
@@ -13,9 +13,9 @@ namespace VersionedCopy.Tests.Services
 		}
 
 
-		public static string Create(params string[] nameParts)
+		public static string Create(string path1, string path2)
 		{
-			var path = ToPath(nameParts);
+			var path = ToPath(path1, path2);
 			if (Path.EndsInDirectorySeparator(path))
 			{
 				Directory.CreateDirectory(path);
@@ -29,23 +29,29 @@ namespace VersionedCopy.Tests.Services
 			}
 		}
 
-		public static void Exists(params string[] nameParts)
+		public static bool Exists(string path1, string path2)
 		{
-			var path = ToPath(nameParts);
+			var path = ToPath(path1, path2);
 			if (Path.EndsInDirectorySeparator(path))
 			{
-				Assert.IsTrue(Directory.Exists(path));
+				return Directory.Exists(path);
 			}
 			else
 			{
-				Assert.IsTrue(File.Exists(path));
+				return File.Exists(path);
 			}
 		}
 
-		public static string Read(params string[] nameParts)
+		public static string Read(string path1, string path2)
 		{
-			var path = ToPath(nameParts);
+			var path = ToPath(path1, path2);
 			return File.ReadAllText(path);
+		}
+
+		public static void UpdateWriteTime(string path1, string path2, DateTime dateTime)
+		{
+			var path = ToPath(path1, path2);
+			File.SetLastWriteTimeUtc(path, dateTime);
 		}
 	}
 }

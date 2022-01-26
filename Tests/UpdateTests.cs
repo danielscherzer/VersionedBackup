@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading;
-using static VersionedCopy.Tests.Services.FileSystemHelper;
+using System;
+using static VersionedCopy.Tests.FileSystemHelper;
 
 namespace VersionedCopy.Tests
 {
@@ -23,13 +23,13 @@ namespace VersionedCopy.Tests
 
 			Program.Main(new string[] { "update", src, dst });
 
-			Exists(dst, "F1");
-			Exists(dst, "F3");
-			Exists(dst, "x\\");
+			Assert.IsTrue(Exists(dst, "F1"));
+			Assert.IsTrue(Exists(dst, "F3"));
+			Assert.IsTrue(Exists(dst, "x\\"));
 
-			Exists(dst, "F2");
-			Exists(dst, "a\\F1");
-			Exists(dst, "b\\");
+			Assert.IsTrue(Exists(dst, "F2"));
+			Assert.IsTrue(Exists(dst, "a\\F1"));
+			Assert.IsTrue(Exists(dst, "b\\"));
 		}
 
 		[TestMethod()]
@@ -38,8 +38,10 @@ namespace VersionedCopy.Tests
 			var src = ToPath("src");
 			var dst = ToPath("dst");
 			Create(dst, "a\\b\\c\\F1");
-			Thread.Sleep(5000);
+
 			var srcF1 = Create(src, "a\\b\\c\\F1");
+			UpdateWriteTime(src, "a\\b\\c\\F1", DateTime.Now.AddSeconds(5));
+
 
 			Program.Main(new string[] { "update", src, dst });
 
@@ -53,8 +55,10 @@ namespace VersionedCopy.Tests
 			var src = ToPath("src");
 			var dst = ToPath("dst");
 			Create(src, "a\\b\\c\\F1");
-			Thread.Sleep(5000);
+
+
 			var dstF1 = Create(dst, "a\\b\\c\\F1");
+			UpdateWriteTime(dst, "a\\b\\c\\F1", DateTime.Now.AddSeconds(5));
 
 			Program.Main(new string[] { "update", src, dst });
 

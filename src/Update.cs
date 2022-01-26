@@ -31,6 +31,7 @@ namespace VersionedCopy
 
 			// make sure dst enumeration task has ended before changing files
 			dstFilesRelative.Wait(env.Token);
+			srcFilesRelative.Wait(env.Token);
 
 			try
 			{

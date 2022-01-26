@@ -24,6 +24,10 @@ namespace VersionedCopy.Tests
 				Assert.AreEqual(args[1].IncludeTrailingPathDelimiter(), options.SourceDirectory);
 				Assert.AreEqual(args[2].IncludeTrailingPathDelimiter(), options.DestinationDirectory);
 				if (args.Length > 3) Assert.IsTrue(options.DryRun);
+				var ignoreDirs = new string[] { ".vs\\", "bin\\", "obj\\", "TestResults\\" };
+				if (args.Length > 7) CollectionAssert.AreEquivalent(ignoreDirs, options.IgnoreDirectories.ToArray());
+				var ignoreFiles = new string[] { "desktop.ini", @"Visual Studio 2022\Visualizers\attribcache140.bin" };
+				if (args.Length > 11) CollectionAssert.AreEquivalent(ignoreFiles, options.IgnoreFiles.ToArray());
 			}
 			void SyncTest(SyncOptions options)
 			{

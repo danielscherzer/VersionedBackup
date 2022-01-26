@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static VersionedCopy.Tests.Services.FileSystemHelper;
+using static VersionedCopy.Tests.FileSystemHelper;
 
 namespace VersionedCopy.Tests
 {

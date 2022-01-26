@@ -35,8 +35,8 @@ namespace VersionedCopy
 		{
 			root = root.IncludeTrailingPathDelimiter();
 			return Task.Run(()
-				=> FileSystem.EnumerateFiles(directories).ToRelative(root)
-				.Ignore(Options.IgnoreFiles).ToHashSet(), Token);
+				=> FileSystem.EnumerateFiles(directories).Ignore(Options.IgnoreFiles).ToRelative(root)
+				.ToHashSet(), Token);
 		}
 
 		public IOptions Options { get; }

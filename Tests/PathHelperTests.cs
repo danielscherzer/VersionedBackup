@@ -9,6 +9,7 @@ namespace VersionedCopy.Tests
 	{
 		[DataTestMethod()]
 		// directories
+		[DataRow(@".vs\", @"D:\Daten\.vs\")]
 		[DataRow(@".vs\", @"D:\Daten\.vs\_cmdTools\VersionedBackup\")]
 		[DataRow(@".vs\", @"D:\Daten\.vscode\_cmdTools\VersionedBackup\", false)]
 		[DataRow(@".vs\", @"D:\Daten\C#\_cmdTools\VersionedBackup\.vs\")]
@@ -22,20 +23,22 @@ namespace VersionedCopy.Tests
 		[DataRow(@"\vs\", @"\vs\dsfgh\", false)]
 		// files
 		[DataRow(@"log", @"\log")]
+		[DataRow(@"?log", @"\alog")]
+		[DataRow(@"*.log", @"\autoexec.log")]
+		[DataRow(@"*.log", @"\a\ghj\autoexec.log")]
+		[DataRow(@"b*.log", @"\butoexec.log")]
+		[DataRow(@"*.log", @"\autoexec.log")]
+		[DataRow(@"\*.log", @"\autoexec.log")]
+		[DataRow(@"b*\*.log", @"\b\autoexec.log")]
+		[DataRow(@"how\*\*.log", @"\how\sadf\autoexec.log")]
+		[DataRow(@"*.log", @"\afsdfsf\sadf\autoexec.log")]
 		[DataRow(@"log", @"\lag", false)]
 		[DataRow(@"log", @"\loga", false)]
-		[DataRow(@"?log", @"\alog")]
 		[DataRow(@"??log", @"\alog", false)]
 		[DataRow(@"log", @"\alog", false)]
 		[DataRow(@"log", @"\loglog", false)]
-		[DataRow(@"*.log", @"\autoexec.log")]
-		[DataRow(@"*.log", @"\a\ghj\autoexec.log")]
 		[DataRow(@"a*.log", @"\butoexec.log", false)]
-		[DataRow(@"b*.log", @"\butoexec.log")]
 		[DataRow(@"*.lo", @"\autoexec.log", false)]
-		[DataRow(@"\*.log", @"\autoexec.log")]
-		[DataRow(@"\b*\*.log", @"\b\autoexec.log")]
-		[DataRow(@"\how\*\*.log", @"\how\sadf\autoexec.log")]
 		[DataRow(@"\*.log", @"\afsdfsf\sadf\autoexec.log", false)]
 		public void WildcardToRegexTest(string pattern, string match, bool isMatch = true)
 		{

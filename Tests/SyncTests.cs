@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static VersionedCopy.Tests.Services.FileSystemHelper;
+using static VersionedCopy.Tests.FileSystemHelper;
 
 namespace VersionedCopy.Tests
 {
@@ -13,7 +13,7 @@ namespace VersionedCopy.Tests
 			var dst = ToPath("dst");
 			Create(src, "F1");
 			Create(src, "F2");
-			Create(src, "a", "F1");
+			Create(src, "a\\F1");
 			Create(src, "b\\");
 
 			Create(dst, "F1");
@@ -22,12 +22,12 @@ namespace VersionedCopy.Tests
 
 			Program.Main(new string[] { "sync", src, dst });
 
-			Exists(src, "F3");
-			Exists(src, "x\\");
+			Assert.IsTrue(Exists(src, "F3"));
+			Assert.IsTrue(Exists(src, "x\\"));
 
-			Exists(dst, "F2");
-			Exists(dst, "a", "F1");
-			Exists(dst, "b\\");
+			Assert.IsTrue(Exists(dst, "F2"));
+			Assert.IsTrue(Exists(dst, "a\\F1"));
+			Assert.IsTrue(Exists(dst, "b\\"));
 		}
 
 		[TestCleanup]
