@@ -1,4 +1,5 @@
 using CommandLine;
+using CommandLine.Text;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -11,7 +12,8 @@ namespace VersionedCopy
 	{
 		private static void Run(IOptions options, Report report, CancellationToken token, Action<AlgorithmEnv> algo)
 		{
-
+			Console.WriteLine($"Source directory:{options.SourceDirectory}");
+			Console.WriteLine($"Destination directory:{options.DestinationDirectory}");
 			if (options.SourceDirectory == options.DestinationDirectory) throw new ArgumentException("Source and destination must be different!");
 #if DEBUG
 			Stopwatch stopwatch = Stopwatch.StartNew();
@@ -34,9 +36,6 @@ namespace VersionedCopy
 
 		public static void Main(string[] args)
 		{
-#if !DEBUG
-		var update = new AutoUpdate();
-#endif
 			// create logger service
 			Report report = new();
 			using CancellationTokenSource cts = new();
@@ -48,16 +47,13 @@ namespace VersionedCopy
 			};
 
 			//ServiceLocator.AddService<IFileSystem>(new FileSystem(report, options.DryRun));
-			var parser = new Parser(with => with.CaseSensitive = false);
-			parser.ParseArguments<MirrorOptions, UpdateOptions, SyncOptions>(args)
+			var parser = new Parser(with => { with.CaseSensitive = false; with.AutoHelp = true; with.HelpWriter = Console.Error; });
+			var result = parser.ParseArguments<MirrorOptions, UpdateOptions, SyncOptions, StoreStateOptions, AssemblyUpdateOptions>(args)
 				.WithParsed<MirrorOptions>(options => Run(options, report, cts.Token, Mirror.Run))
 				.WithParsed<UpdateOptions>(options => Run(options, report, cts.Token, Update.Run))
 				.WithParsed<SyncOptions>(options => Run(options, report, cts.Token, Sync.Run))
-				.WithParsed<StoreStateOptions>(options => StoreState.Run(options.Directory, options.DatabaseFileName, options.IgnoreDirectories, options.IgnoreFiles));
-
-#if !DEBUG
-update.CheckAndExecuteUpdateAsync();
-#endif
+				.WithParsed<StoreStateOptions>(options => StoreState.Run(options.Directory, options.DatabaseFileName, options.IgnoreDirectories, options.IgnoreFiles))
+				.WithParsed<AssemblyUpdateOptions>(options => AssemblyUpdate.Update());
 		}
 	}
 }
