@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using VersionedCopy.PathHelper;
 using VersionedCopy.Services;
 
@@ -37,7 +38,8 @@ namespace VersionedCopy
 	public class StoreState
 	{
 		public static void Run(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
-		{
+{
+			Console.WriteLine($"Store state '{directory}' to '{databaseFileName}'");
 			var root = new DirectoryInfo(directory);
 			if (!root.Exists) return;
 			var rootState = new DirectoryState(root.Name);

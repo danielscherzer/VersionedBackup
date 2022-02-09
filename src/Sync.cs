@@ -11,6 +11,7 @@ namespace VersionedCopy
 		{
 			var src = env.Options.SourceDirectory.IncludeTrailingPathDelimiter();
 			var dst = env.Options.DestinationDirectory.IncludeTrailingPathDelimiter();
+			Console.WriteLine($"Sync from '{src}' to '{dst}'");
 
 			Task<string[]> srcDirs = env.EnumerateDirsAsync(src);
 			Task<string[]> dstDirs = env.EnumerateDirsAsync(dst);
