@@ -13,9 +13,10 @@ namespace VersionedCopy
 			var tempDir = Path.Combine(Path.GetTempPath(), nameof(VersionedCopy));
 			Directory.CreateDirectory(tempDir);
 			var updateArchive = Path.Combine(tempDir, "update.zip");
-			Console.WriteLine("Checking for new version...");
-			var updateTask = UpdateTools.CheckDownloadNewVersionAsync("danielScherzer", "VersionedCopy"
-				, assembly.GetName().Version, updateArchive);
+			var version = assembly.GetName().Version;
+			Console.WriteLine($"Versioned Copy {version}");
+			Console.WriteLine($"Checking for newer version ...");
+			var updateTask = UpdateTools.CheckDownloadNewVersionAsync("danielScherzer", "VersionedCopy", version, updateArchive);
 
 			if (updateTask.Result)
 			{

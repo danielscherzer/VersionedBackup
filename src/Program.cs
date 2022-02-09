@@ -1,5 +1,4 @@
 using CommandLine;
-using CommandLine.Text;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -8,12 +7,12 @@ using VersionedCopy.Services;
 
 namespace VersionedCopy
 {
-	public class Program
+	public static class Program
 	{
 		private static void Run(IOptions options, Report report, CancellationToken token, Action<AlgorithmEnv> algo)
 		{
-			Console.WriteLine($"Source directory:{options.SourceDirectory}");
-			Console.WriteLine($"Destination directory:{options.DestinationDirectory}");
+			Console.WriteLine($"Source directory: '{options.SourceDirectory}'");
+			Console.WriteLine($"Destination directory: '{options.DestinationDirectory}'");
 			if (options.SourceDirectory == options.DestinationDirectory) throw new ArgumentException("Source and destination must be different!");
 #if DEBUG
 			Stopwatch stopwatch = Stopwatch.StartNew();
