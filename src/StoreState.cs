@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -37,11 +38,10 @@ namespace VersionedCopy
 
 	public class StoreState
 	{
-		public static void Run(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
-{
-			Console.WriteLine($"Store state '{directory}' to '{databaseFileName}'");
+		public static DirectoryState Create(string directory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
+		{
 			var root = new DirectoryInfo(directory);
-			if (!root.Exists) return;
+			if (!root.Exists) throw new DirectoryNotFoundException(directory);
 			var rootState = new DirectoryState(root.Name);
 
 			var subDirs = new Stack<(DirectoryInfo, DirectoryState)>();
@@ -69,23 +69,34 @@ namespace VersionedCopy
 					Debug.WriteLine(ex.Message);
 				}
 			}
-			//string json = JsonConvert.SerializeObject(rootState, Formatting.Indented);
-			//File.WriteAllText(databaseFileName, json);
+			return rootState;
 		}
 
-		public static void Run2(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
+		public static (HashSet<string> dirs, Dictionary<string, DateTime> fileInfo) Create2(string directory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
 		{
 			directory = directory.IncludeTrailingPathDelimiter();
 			Stopwatch stopwatch = Stopwatch.StartNew();
-			HashSet<string> dirs = Directory.GetDirectories(directory, "*.*", SearchOption.AllDirectories)
-				.ToRelative(directory).Ignore(ignoreDirectories).ToHashSet();
+			var dirs = Directory.GetDirectories(directory, "*.*", SearchOption.AllDirectories)
+				.ToRelative(directory)
+				.Select(dir => dir.IncludeTrailingPathDelimiter())
+				.Ignore(ignoreDirectories);
+
+
 			stopwatch.Benchmark("dirs");
+			HashSet<string> dirHash = dirs.ToHashSet();
 			var files = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories).Ignore(ignoreFiles);
 			stopwatch.Benchmark("files");
 			Dictionary<string, DateTime> fileInfo = files.ToDictionary(file => file[directory.Length..], file => new FileInfo(file).LastWriteTimeUtc);
 			stopwatch.Benchmark("toDic");
-			//string json = JsonConvert.SerializeObject(state, Formatting.Indented);
-			//File.WriteAllText(databaseFileName, json);
+			return (dirHash, fileInfo);
+		}
+
+		public static void Run(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
+{
+			Console.WriteLine($"Store state '{directory}' to '{databaseFileName}'");
+			var state = Create(directory, ignoreDirectories, ignoreFiles);
+			string json = JsonConvert.SerializeObject(state, Formatting.Indented);
+			File.WriteAllText(databaseFileName, json);
 		}
 	}
 }
