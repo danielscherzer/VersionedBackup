@@ -7,11 +7,15 @@ namespace VersionedCopy.PathHelper
 {
 	public static class PathHelper
 	{
+		public static Regex CreateIgnoreRegex(this string ignorePath) => new(ignorePath.WildcardToRegex(), RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+
+		public static IEnumerable<Regex> CreateIgnoreRegex(this IEnumerable<string> ignorePaths) => ignorePaths.Select(ignorePath => CreateIgnoreRegex(ignorePath));
+
+		public static bool AnyMatch(this IEnumerable<Regex> regex, string input) => regex.Any(regex => regex.IsMatch(input));
+
 		public static IEnumerable<string> Ignore(this IEnumerable<string> paths, IEnumerable<string> ignorePaths)
 		{
-			var regexIgnorePaths = ignorePaths.Select(ignorePath
-				=> new Regex(ignorePath.WildcardToRegex(), RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled))
-				.ToList();
+			var regexIgnorePaths = ignorePaths.Select(ignorePath => CreateIgnoreRegex(ignorePath)).ToList();
 
 			return paths.Where(path => !regexIgnorePaths.Any(regex => regex.IsMatch(path)));
 		}

@@ -5,9 +5,10 @@ using VersionedCopy.PathHelper;
 
 namespace VersionedCopy.Services
 {
-	public class StoreStateOptions
+	[Verb("snapshot", HelpText = "Sync the soure directory and the destination directory bidirectionally.")]
+	public class SnapshotOptions
 	{
-		public StoreStateOptions(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
+		public SnapshotOptions(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
 		{
 			Directory = directory.IncludeTrailingPathDelimiter();
 			DatabaseFileName = databaseFileName;
