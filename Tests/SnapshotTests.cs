@@ -22,10 +22,14 @@ namespace VersionedCopy.Tests
 			File.WriteAllText(Path.Combine("d:", $"snapshot {DateTime.Now:yyyy-MM-dd_HHmmss}.json"), json);
 			var state2 = JsonConvert.DeserializeObject<Snapshot>(json);
 
-			var stateOld = JsonConvert.DeserializeObject<Snapshot>(File.ReadAllText(@"D:\snapshot 2022-02-24_140801.json"));
-			stopwatch.Benchmark("save");
-			var diff = new SnapshotDiff(stateOld, state2);
-			stopwatch.Benchmark("diff");
+			var oldStateFile = @"D:\snapshot 2022-02-24_140801.json";
+			if (File.Exists(oldStateFile))
+			{
+				var stateOld = JsonConvert.DeserializeObject<Snapshot>(File.ReadAllText(@"D:\snapshot 2022-02-24_140801.json"));
+				stopwatch.Benchmark("save");
+				var diff = new SnapshotDiff(stateOld, state2);
+				stopwatch.Benchmark("diff");
+			}
 		}
 
 		[TestMethod()]
