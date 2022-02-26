@@ -50,17 +50,20 @@ namespace VersionedCopy
 
 	public class Snapshot
 	{
-		public HashSet<string> Directories;
-		public Dictionary<string, DateTime> Files;
+		public DateTime TimeStamp { get; }
+		public HashSet<string> Directories { get; }
+		public Dictionary<string, DateTime> Files { get; }
 
-		public Snapshot(HashSet<string> dirs, Dictionary<string, DateTime> files)
+		public Snapshot(HashSet<string> dirs, Dictionary<string, DateTime> files, DateTime timeStamp)
 		{
 			Directories = dirs;
 			Files = files;
+			TimeStamp = timeStamp;
 		}
 
 		public static Snapshot Create(string directory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
 		{
+			//TODO: add cancellation token
 			directory = directory.IncludeTrailingPathDelimiter();
 			var dirs = Directory.GetDirectories(directory, "*.*", SearchOption.AllDirectories)
 				.ToRelative(directory)
@@ -76,7 +79,7 @@ namespace VersionedCopy
 						select file;
 
 			var fileInfo = files.ToDictionary(file => file[directory.Length..], file => File.GetLastWriteTimeUtc(file));
-			return new Snapshot(dirHash, fileInfo);
+			return new Snapshot(dirHash, fileInfo, DateTime.Now);
 		}
 
 		public IEnumerable<string> DirectorySingles(Snapshot other) => Directories.Where(dir => !other.Directories.Contains(dir));
