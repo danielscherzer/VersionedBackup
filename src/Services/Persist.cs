@@ -11,9 +11,9 @@ namespace VersionedCopy.Services
 			File.WriteAllText(fileName, json);
 		}
 
-		internal static TData? Load<TData>(string fileName) where TData : class
+		internal static TData? Load<TData>(string fileName)
 		{
-			if (!File.Exists(fileName)) return null;
+			if (!File.Exists(fileName)) return default;
 			var json = File.ReadAllText(fileName);
 			return JsonConvert.DeserializeObject<TData>(json);
 		}

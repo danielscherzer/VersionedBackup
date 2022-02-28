@@ -8,26 +8,15 @@ using VersionedCopy.PathHelper;
 
 namespace VersionedCopy
 {
-	using Directory = KeyValuePair<string, DateTime>;
-	using File = KeyValuePair<string, DateTime>;
-
 	public class Snapshot
 	{
-		public Snapshot()
-		{
-			TimeStamp = DateTime.UtcNow;
-		}
+		public void Add(string name, DateTime writeTime) => Entries.Add(name, writeTime);
 
-		public Snapshot(DateTime timeStamp)
-		{
-			TimeStamp = timeStamp;
-		}
+		public Dictionary<string, DateTime> Entries { get; } = new();
 
-		public Dictionary<string, DateTime> Directories { get; } = new ();
-		public Dictionary<string, DateTime> Files { get; } = new();
-		public DateTime TimeStamp { get; set; }
+		public static bool IsFile(string fileName) => !Path.EndsInDirectorySeparator(fileName);
 
-		public void AddFile(string name, DateTime writeTime) => Files.Add(name, writeTime);
+		public IEnumerable<KeyValuePair<string, DateTime>> Files() => Entries.Where(entry => IsFile(entry.Key));
 
 		//public static Snapshot Create(string directory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
 		//{
@@ -76,13 +65,13 @@ namespace VersionedCopy
 					{
 						var relativName = ToRelative(file.FullName);
 						if (regexIgnoreFiles.AnyMatch(relativName)) continue;
-						snapshot.AddFile(relativName, file.LastWriteTimeUtc);
+						snapshot.Add(relativName, file.LastWriteTimeUtc);
 					}
 					foreach (var subDir in dir.EnumerateDirectories())
 {
 						var relativName = ToRelative(subDir.FullName) + Path.DirectorySeparatorChar;
 						if (regexIgnoreDirectories.AnyMatch(relativName)) continue;
-						snapshot.Directories[relativName] = subDir.CreationTimeUtc;
+						snapshot.Add(relativName, subDir.CreationTimeUtc);
 						subDirs.Enqueue(subDir);
 					}
 				}
@@ -94,16 +83,14 @@ namespace VersionedCopy
 			return snapshot;
 		}
 
-		public IEnumerable<Directory> DirectorySingles(Snapshot other) => Directories.Where(dir => !other.Directories.ContainsKey(dir.Key));
-
-		public IEnumerable<File> FileSingles(Snapshot other) => Files.Where(file => !other.Files.ContainsKey(file.Key));
+		public IEnumerable<KeyValuePair<string, DateTime>> Singles(Snapshot other) => Entries.Where(dir => !other.Entries.ContainsKey(dir.Key));
 
 		public static void Run(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
 		{
 			Console.WriteLine($"Store state '{directory}' to '{databaseFileName}'");
 			var state = Create(directory, ignoreDirectories, ignoreFiles);
 			string json = JsonConvert.SerializeObject(state, Formatting.Indented);
-			System.IO.File.WriteAllText(databaseFileName, json);
+			File.WriteAllText(databaseFileName, json);
 		}
 	}
 }

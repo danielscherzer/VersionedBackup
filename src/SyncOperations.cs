@@ -3,13 +3,11 @@ using System;
 
 namespace VersionedCopy
 {
-	using Entry = KeyValuePair<string, DateTime>;
-
 	public class SyncOperations
 	{
 		public SyncOperations(Snapshot mine, Snapshot other, DateTime lastSync)
 		{
-			static void Split(IEnumerable<Entry> singles, DateTime lastSync, out List<string> newEntries, out List<string> deletedEntries)
+			static void Split(IEnumerable<KeyValuePair<string, DateTime>> singles, DateTime lastSync, out List<string> newEntries, out List<string> deletedEntries)
 			{
 				newEntries = new();
 				deletedEntries = new();
@@ -26,16 +24,14 @@ namespace VersionedCopy
 				}
 			}
 
-			Split(mine.DirectorySingles(other), lastSync, out var mineNewDirectories, out var mineDeletedDirectories);
-			Split(other.DirectorySingles(mine), lastSync, out var otherNewDirectories, out var otherDeletedDirectories);
-			Split(mine.FileSingles(other), lastSync, out var mineNewFiles, out var mineDeletedFiles);
-			Split(other.FileSingles(mine), lastSync, out var otherNewFiles, out var otherDeletedFiles);
+			Split(mine.Singles(other), lastSync, out var mineNew, out var mineToDelete);
+			Split(other.Singles(mine), lastSync, out var otherNew, out var otherToDelete);
 
 			List<string> otherUpdatedFiles = new();
 			List<string> mineUpdatedFiles = new();
-			foreach (var file in other.Files)
+			foreach (var file in other.Files())
 			{
-				if (mine.Files.TryGetValue(file.Key, out var writeTime))
+				if (mine.Entries.TryGetValue(file.Key, out var writeTime))
 				{
 					// files exists in b -> compare write time
 					var secondsDiff = (file.Value - writeTime).TotalSeconds;
@@ -50,11 +46,21 @@ namespace VersionedCopy
 					}
 				}
 			}
-			OtherUpdatedFiles = otherUpdatedFiles.ToArray();
+			MineToDelete = mineToDelete.ToArray();
+			MineNew = mineNew.ToArray();
 			MineUpdatedFiles = mineUpdatedFiles.ToArray();
+
+			OtherToDelete = otherToDelete.ToArray();
+			OtherNew = otherNew.ToArray();
+			OtherUpdatedFiles = otherUpdatedFiles.ToArray();
 		}
 
+		public string[] OtherToDelete { get; }
+		public string[] OtherNew { get; }
 		public string[] OtherUpdatedFiles { get; }
+
+		public string[] MineToDelete { get; }
+		public string[] MineNew { get; }
 		public string[] MineUpdatedFiles { get; }
 	}
 }
