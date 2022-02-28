@@ -1,80 +1,45 @@
 ﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+using System.IO;
 using VersionedCopy.PathHelper;
+using VersionedCopy.Services;
 
 namespace VersionedCopy
 {
 	public class Sync
 	{
+		public const string FileNameSnapShot = ".versioned.copy.snapshot.json";
+		
 		public static void Run(AlgorithmEnv env)
 		{
 			var src = env.Options.SourceDirectory.IncludeTrailingPathDelimiter();
 			var dst = env.Options.DestinationDirectory.IncludeTrailingPathDelimiter();
-			Console.WriteLine($"Sync from '{src}' to '{dst}'");
+			if (!Directory.Exists(dst)) env.Op.CreateDirectory(".");
+			Console.WriteLine($"Sync '{src}' <-> '{dst}'");
 
-			Task<string[]> srcDirs = env.EnumerateDirsAsync(src);
-			Task<string[]> dstDirs = env.EnumerateDirsAsync(dst);
+			//TODO: Two threads
+			// Create a snapshot from source
+			var snapSrc = Snapshot.Create(src, env.Options.IgnoreDirectories, env.Options.IgnoreFiles, env.Token);
+			// TODO: try read snapshot from destination otherwise create
+			var snapDst = Persist.Load<Snapshot>(dst + FileNameSnapShot) ?? Snapshot.Create(dst, env.Options.IgnoreDirectories, env.Options.IgnoreFiles, env.Token);
 
-			var srcDirsRelative = srcDirs.Result.ToRelative(src).ToHashSet();
-			var dstDirsRelative = dstDirs.Result.ToRelative(dst).ToHashSet();
+			// Copy updated files to other side, old version move to old folder
+			SyncOperations.UpdatedFiles(snapSrc, snapDst, out var srcUpdatedFiles, out var dstUpdatedFiles);
+			// TODO: Do on different thread
+			env.UpdateFiles(src, dst, srcUpdatedFiles);
+			env.UpdateFiles(dst, src, dstUpdatedFiles);
 
-			var srcFilesRelative = env.EnumerateRelativeFilesAsync(src, srcDirs.Result);
-			var dstFilesRelative = env.EnumerateRelativeFilesAsync(dst, dstDirs.Result);
+			SyncList syncs = new(src, dst);
 
-			//create missing directories in dst
-			var srcDirSingles = srcDirsRelative.Where(srcDir => !dstDirsRelative.Contains(srcDir));
-			foreach (var subDir in srcDirSingles)
-			{
-				if (env.Token.IsCancellationRequested) return;
-				//TODO: if in delete log move to old dir
-				env.Op.CreateDirectory(subDir);
-			}
+			SyncOperations.NewAndToDelete(snapSrc, snapDst, syncs.LastSyncTime, out var srcNew, out var srcToDelete);
+			env.Copy(src, dst, srcNew);
+			env.MoveAway(src, srcToDelete);
 
-			// make sure dst enumeration task has ended before changing directories and files
-			dstFilesRelative.Wait(env.Token);
-
-			// find directories in dst, but not in src
-			var dstDirSingles = dstDirsRelative.Where(dstDir => !srcDirsRelative.Contains(dstDir));
-			// create missing directories in src
-			foreach (var subDir in dstDirSingles)
-			{
-				if (env.Token.IsCancellationRequested) return;
-				//TODO: if in delete log move to old dir
-				env.Op.CreateSrcDirectory(subDir);
-			}
-
-			// find files in src, but not in dst
-			var srcFileSingles = srcFilesRelative.Result.Where(srcFileRelative => !dstFilesRelative.Result.Contains(srcFileRelative));
-			foreach (var fileName in srcFileSingles)
-			{
-				if (env.Token.IsCancellationRequested) return;
-				env.Op.CopyNewFile(fileName);
-				//TODO: if in delete log op.MoveAwayDeleted(fileName);
-			}
-
-			// find files in dst, but not in src
-			var dstFileSingles = dstFilesRelative.Result.Where(dstFileRelative => !srcFilesRelative.Result.Contains(dstFileRelative));
-			foreach (var fileName in dstFileSingles)
-			{
-				if (env.Token.IsCancellationRequested) return;
-				env.Op.CopyNewFileToSrc(fileName);
-				//TODO: if in delete log op.MoveAwayDeleted(fileName);
-			}
-
-			// in both
-			srcFilesRelative.Result.IntersectWith(dstFilesRelative.Result);
-			try
-			{
-				//Parallel.ForEach(srcFilesRelative.Result, new ParallelOptions { CancellationToken = env.Token }, fileName =>
-				foreach (var fileName in srcFilesRelative.Result)
-				{
-					env.Op.CopyNewerFileToOtherSide(fileName);
-				}//);
-			}
-			catch (OperationCanceledException)
-			{
-			}
+			SyncOperations.NewAndToDelete(snapDst, snapSrc, syncs.LastSyncTime, out var dstNew, out var dstToDelete);
+			env.Copy(dst, src, dstNew);
+			env.MoveAway(dst, dstToDelete);
+			
+			syncs.Save();
+			//TODO: save snapshots with changes at destination
 		}
 	}
 }

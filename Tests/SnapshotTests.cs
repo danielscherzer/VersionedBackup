@@ -16,7 +16,7 @@ namespace VersionedCopy.Tests
 		public void CreateTest()
 		{
 			Stopwatch stopwatch = Stopwatch.StartNew();
-			var state = Snapshot.Create(@"d:\daten", new string[] { ".vs\\", "bin\\", "obj\\", "TestResults\\" }, Enumerable.Empty<string>());
+			var state = Snapshot.Create(@"d:\daten", new string[] { ".vs\\", "bin\\", "obj\\", "TestResults\\" }, Enumerable.Empty<string>(), new System.Threading.CancellationToken());
 			stopwatch.Benchmark("create");
 			var json = JsonConvert.SerializeObject(state, Formatting.Indented);
 			File.WriteAllText(Path.Combine("d:", $"snapshot {DateTime.Now:yyyy-MM-dd_HHmmss}.json"), json);
@@ -37,7 +37,7 @@ namespace VersionedCopy.Tests
 			var src = ToPath("src");
 			foreach (var item in list) Create(src, item);
 
-			Snapshot snapShot = Snapshot.Create(src, Enumerable.Empty<string>(), Enumerable.Empty<string>());
+			Snapshot snapShot = Snapshot.Create(src, Enumerable.Empty<string>(), Enumerable.Empty<string>(), new System.Threading.CancellationToken());
 			foreach(var item in list)
 			{
 				Assert.IsTrue(snapShot.Entries.ContainsKey(item));

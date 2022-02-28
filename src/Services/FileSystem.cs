@@ -9,13 +9,13 @@ namespace VersionedCopy.Services
 {
 	internal class FileSystem : IFileSystem
 	{
-		public FileSystem(IErrorOutput errorOutput, bool readOnly)
+		public FileSystem(IOutput errorOutput, bool readOnly)
 		{
 			ErrorOutput = errorOutput ?? throw new ArgumentNullException(nameof(errorOutput));
 			ReadOnly = readOnly;
 		}
 
-		private IErrorOutput ErrorOutput { get; }
+		private IOutput ErrorOutput { get; }
 		private bool ReadOnly { get; }
 
 		public bool CreateDirectory(string path)

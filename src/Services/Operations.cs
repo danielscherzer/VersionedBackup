@@ -5,14 +5,14 @@ namespace VersionedCopy.Services
 	public class Operations
 	{
 		private readonly IFileSystem fileSystem;
-		private readonly IReport report;
+		private readonly IOutput output;
 		private readonly string src;
 		private readonly string dst;
 		private readonly string old;
 
-		public Operations(IReport report, IDirectories directories, IFileSystem fileSystem)
+		public Operations(IOutput output, IDirectories directories, IFileSystem fileSystem)
 		{
-			this.report = report;
+			this.output = output;
 			this.fileSystem = fileSystem;
 			src = directories.SourceDirectory;
 			dst = directories.DestinationDirectory;
@@ -25,20 +25,9 @@ namespace VersionedCopy.Services
 			var dstFilePath = dst + fileName;
 			if (fileSystem.Copy(srcFilePath, dstFilePath))
 			{
-				report.Add(Operation.NewFile, fileName);
+				output.Report($"New file '{fileName}'");
 			}
 		}
-
-		internal void CopyNewFileToSrc(string fileName)
-		{
-			var srcFilePath = src + fileName;
-			var dstFilePath = dst + fileName;
-			if (fileSystem.Copy(dstFilePath, srcFilePath))
-			{
-				report.Add(Operation.NewFile, fileName);
-			}
-		}
-
 
 		internal void CopyUpdatedFile(string fileName)
 		{
@@ -52,7 +41,7 @@ namespace VersionedCopy.Services
 					// copy updated to dst
 					if (fileSystem.Copy(srcFilePath, dstFilePath))
 					{
-						report.Add(Operation.UpdateFile, fileName);
+						output.Report($"Replace file '{fileName}'");
 					}
 				}
 			}
@@ -63,16 +52,7 @@ namespace VersionedCopy.Services
 			string directory = dst + subDir;
 			if (fileSystem.CreateDirectory(directory))
 			{
-				report.Add(Operation.CreateDir, subDir);
-			}
-		}
-
-		internal void CreateSrcDirectory(string subDir)
-		{
-			string directory = src + subDir;
-			if (fileSystem.CreateDirectory(directory))
-			{
-				report.Add(Operation.CreateDir, subDir);
+				output.Report($"Create directory '{subDir}'");
 			}
 		}
 
@@ -84,7 +64,7 @@ namespace VersionedCopy.Services
 				string destination = old + subDir;
 				if (fileSystem.MoveDirectory(source, destination))
 				{
-					report.Add(Operation.DeleteDir, subDir);
+					output.Report($"Delete directory '{subDir}'");
 				}
 			}
 		}
@@ -97,7 +77,7 @@ namespace VersionedCopy.Services
 				string destination = old + fileName;
 				if (fileSystem.MoveFile(moveAwayFileName, destination))
 				{
-					report.Add(Operation.DeleteFile, fileName);
+					output.Report($"Backup file '{fileName}'");
 				}
 			}
 		}
@@ -114,29 +94,8 @@ namespace VersionedCopy.Services
 					// copy new to dst
 					if (fileSystem.Copy(srcFilePath, dstFilePath))
 					{
-						report.Add(Operation.ReplaceFile, fileName);
+						output.Report($"Replace file '{fileName}'");
 					}
-				}
-			}
-		}
-
-		internal void CopyNewerFileToOtherSide(string fileName)
-		{
-			var srcFilePath = src + fileName;
-			var dstFilePath = dst + fileName;
-			switch (fileSystem.CompareAge(srcFilePath, dstFilePath))
-			{
-				case -1: var temp = srcFilePath; srcFilePath = dstFilePath; dstFilePath = temp; break; // dstFile newer
-				case 1: break; // srcFile newer
-				default: return;
-			}
-			// move old to oldFilesFolder
-			if (fileSystem.MoveFile(dstFilePath, old + fileName))
-			{
-				// copy new to dst
-				if (fileSystem.Copy(srcFilePath, dstFilePath))
-				{
-					report.Add(Operation.ReplaceFile, fileName);
 				}
 			}
 		}

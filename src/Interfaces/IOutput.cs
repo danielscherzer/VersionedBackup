@@ -1,7 +1,8 @@
 namespace VersionedCopy.Interfaces
 {
-	public interface IErrorOutput
+	public interface IOutput
 	{
+		void Report(string message);
 		void Error(string message);
 	}
 }

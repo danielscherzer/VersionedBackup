@@ -42,9 +42,8 @@ namespace VersionedCopy
 		//	return new Snapshot(dirHash, fileInfo, DateTime.Now);
 		//}
 
-		public static Snapshot Create(string directory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
+		public static Snapshot Create(string directory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, System.Threading.CancellationToken cancellationToken)
 		{
-			//TODO: add cancellation token
 			directory = directory.IncludeTrailingPathDelimiter();
 			var root = new DirectoryInfo(directory);
 			if (!root.Exists) throw new DirectoryNotFoundException(directory);
@@ -63,14 +62,16 @@ namespace VersionedCopy
 				{
 					foreach (var file in dir.EnumerateFiles())
 					{
+						if (cancellationToken.IsCancellationRequested) return snapshot;
 						var relativName = ToRelative(file.FullName);
-						if (regexIgnoreFiles.AnyMatch(relativName)) continue;
+						if (regexIgnoreFiles.AnyMatch(Path.DirectorySeparatorChar + relativName)) continue;
 						snapshot.Add(relativName, file.LastWriteTimeUtc);
 					}
 					foreach (var subDir in dir.EnumerateDirectories())
 {
+						if (cancellationToken.IsCancellationRequested) return snapshot;
 						var relativName = ToRelative(subDir.FullName) + Path.DirectorySeparatorChar;
-						if (regexIgnoreDirectories.AnyMatch(relativName)) continue;
+						if (regexIgnoreDirectories.AnyMatch(Path.DirectorySeparatorChar + relativName)) continue;
 						snapshot.Add(relativName, subDir.CreationTimeUtc);
 						subDirs.Enqueue(subDir);
 					}
@@ -85,10 +86,10 @@ namespace VersionedCopy
 
 		public IEnumerable<KeyValuePair<string, DateTime>> Singles(Snapshot other) => Entries.Where(dir => !other.Entries.ContainsKey(dir.Key));
 
-		public static void Run(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
+		public static void Run(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, System.Threading.CancellationToken cancellationToken)
 		{
 			Console.WriteLine($"Store state '{directory}' to '{databaseFileName}'");
-			var state = Create(directory, ignoreDirectories, ignoreFiles);
+			var state = Create(directory, ignoreDirectories, ignoreFiles, cancellationToken);
 			string json = JsonConvert.SerializeObject(state, Formatting.Indented);
 			File.WriteAllText(databaseFileName, json);
 		}

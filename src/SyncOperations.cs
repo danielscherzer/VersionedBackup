@@ -3,32 +3,29 @@ using System;
 
 namespace VersionedCopy
 {
-	public class SyncOperations
+	public static class SyncOperations
 	{
-		public SyncOperations(Snapshot mine, Snapshot other, DateTime lastSync)
+		public static void NewAndToDelete(Snapshot mine, Snapshot other, DateTime lastSync, out List<string> newEntries, out List<string> toDeleteEntries)
 		{
-			static void Split(IEnumerable<KeyValuePair<string, DateTime>> singles, DateTime lastSync, out List<string> newEntries, out List<string> deletedEntries)
+			newEntries = new();
+			toDeleteEntries = new();
+			foreach (var single in mine.Singles(other))
 			{
-				newEntries = new();
-				deletedEntries = new();
-				foreach (var single in singles)
+				if (single.Value > lastSync)
 				{
-					if (single.Value > lastSync)
-					{
-						newEntries.Add(single.Key);
-					}
-					else
-					{
-						deletedEntries.Add(single.Key);
-					}
+					newEntries.Add(single.Key);
+				}
+				else
+				{
+					toDeleteEntries.Add(single.Key);
 				}
 			}
+		}
 
-			Split(mine.Singles(other), lastSync, out var mineNew, out var mineToDelete);
-			Split(other.Singles(mine), lastSync, out var otherNew, out var otherToDelete);
-
-			List<string> otherUpdatedFiles = new();
-			List<string> mineUpdatedFiles = new();
+		public static void UpdatedFiles(Snapshot mine, Snapshot other, out List<string> mineUpdatedFiles, out List<string> otherUpdatedFiles)
+		{
+			mineUpdatedFiles = new();
+			otherUpdatedFiles = new();
 			foreach (var file in other.Files())
 			{
 				if (mine.Entries.TryGetValue(file.Key, out var writeTime))
@@ -46,21 +43,6 @@ namespace VersionedCopy
 					}
 				}
 			}
-			MineToDelete = mineToDelete.ToArray();
-			MineNew = mineNew.ToArray();
-			MineUpdatedFiles = mineUpdatedFiles.ToArray();
-
-			OtherToDelete = otherToDelete.ToArray();
-			OtherNew = otherNew.ToArray();
-			OtherUpdatedFiles = otherUpdatedFiles.ToArray();
 		}
-
-		public string[] OtherToDelete { get; }
-		public string[] OtherNew { get; }
-		public string[] OtherUpdatedFiles { get; }
-
-		public string[] MineToDelete { get; }
-		public string[] MineNew { get; }
-		public string[] MineUpdatedFiles { get; }
 	}
 }

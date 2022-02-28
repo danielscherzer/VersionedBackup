@@ -18,10 +18,11 @@ namespace VersionedCopy
 		/// </summary>
 		/// <param name="options"></param>
 		/// <param name="token"><see cref="CancellationToken"/></param>
-		public AlgorithmEnv(IOptions options, IReport report, IFileSystem fileSystem, CancellationToken token)
+		public AlgorithmEnv(IOptions options, IOutput output, IFileSystem fileSystem, CancellationToken token)
 		{
-			Op = new Operations(report, options, fileSystem);
+			Op = new Operations(output, options, fileSystem);
 			Options = options;
+			Output = output;
 			FileSystem = fileSystem;
 			Token = token;
 		}
@@ -40,13 +41,68 @@ namespace VersionedCopy
 				.ToHashSet(), Token);
 		}
 
-		public void Copy(string fileName)
+		internal void Copy(string src, string dst, List<string> srcNew)
 		{
-			var srcFilePath = Options.SourceDirectory + fileName;
-			var dstFilePath = Options.DestinationDirectory + fileName;
+			foreach (var fileName in srcNew)
+			{
+				if (Token.IsCancellationRequested) return;
+				if (Snapshot.IsFile(fileName))
+				{
+					if(FileSystem.Copy(src + fileName, dst + fileName)) //copy new
+					{
+						Output.Report($"New file '{fileName}'");
+					}
+				}
+				else
+				{
+					if(FileSystem.CreateDirectory(dst + fileName))
+					{
+						Output.Report($"Create directory '{fileName}'");
+					}
+				}
+			}
+		}
+
+		internal void MoveAway(string root, List<string> srcToDelete)
+		{
+			foreach (var fileName in srcToDelete)
+			{
+				if (Token.IsCancellationRequested) return;
+				//move deleted to old
+				if (Snapshot.IsFile(fileName))
+				{
+					if(FileSystem.MoveFile(root + fileName, Options.OldFilesFolder + fileName))
+					{
+						Output.Report($"Backup file '{fileName}'");
+					}
+				}
+				else
+				{
+					if(FileSystem.MoveDirectory(root + fileName, Options.OldFilesFolder + fileName))
+					{
+						Output.Report($"Delete directory '{fileName}'");
+					}
+				}
+			}
+		}
+
+		internal void UpdateFiles(string src, string dst, IEnumerable<string> updatedFiles)
+		{
+			foreach (var fileName in updatedFiles)
+			{
+				if (Token.IsCancellationRequested) return;
+				if (FileSystem.MoveFile(dst + fileName, Options.OldFilesFolder + fileName)) //move away old
+				{
+					if (FileSystem.Copy(src + fileName, dst + fileName)) //copy new
+					{
+						Output.Report($"Replace file '{fileName}'");
+					}
+				}
+			}
 		}
 
 		public IOptions Options { get; }
+		public IOutput Output { get; }
 		public IFileSystem FileSystem { get; }
 		public CancellationToken Token { get; }
 		public Operations Op { get; }
