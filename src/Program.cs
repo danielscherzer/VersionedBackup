@@ -45,10 +45,11 @@ namespace VersionedCopy
 
 			//ServiceLocator.AddService<IFileSystem>(new FileSystem(report, options.DryRun));
 			var parser = new Parser(with => { with.CaseSensitive = false; with.AutoHelp = true; with.HelpWriter = Console.Error; });
-			var result = parser.ParseArguments<MirrorOptions, UpdateOptions, SyncOptions, SnapshotOptions, AssemblyUpdateOptions>(args)
+			var result = parser.ParseArguments<MirrorOptions, UpdateOptions, SyncOptions, NewSyncOptions, SnapshotOptions, AssemblyUpdateOptions>(args)
 				.WithParsed<MirrorOptions>(options => Run(options, report, cts.Token, Mirror.Run))
 				.WithParsed<UpdateOptions>(options => Run(options, report, cts.Token, Update.Run))
 				.WithParsed<SyncOptions>(options => Run(options, report, cts.Token, Sync.Run))
+				.WithParsed<NewSyncOptions>(options => Run(options, report, cts.Token, NewSync.Run))
 				.WithParsed<SnapshotOptions>(options => Snapshot.Run(options.Directory, options.DatabaseFileName, options.IgnoreDirectories, options.IgnoreFiles))
 				.WithParsed<AssemblyUpdateOptions>(options => AssemblyUpdate.Update());
 		}

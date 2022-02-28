@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using VersionedCopy.Interfaces;
@@ -37,6 +38,12 @@ namespace VersionedCopy
 			return Task.Run(()
 				=> FileSystem.EnumerateFiles(directories).Ignore(Options.IgnoreFiles).ToRelative(root)
 				.ToHashSet(), Token);
+		}
+
+		public void Copy(string fileName)
+		{
+			var srcFilePath = Options.SourceDirectory + fileName;
+			var dstFilePath = Options.DestinationDirectory + fileName;
 		}
 
 		public IOptions Options { get; }
