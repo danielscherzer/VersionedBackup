@@ -15,19 +15,19 @@ namespace VersionedCopy.Tests
 		[TestMethod()]
 		public void CreateTest()
 		{
-			Stopwatch stopwatch = Stopwatch.StartNew();
-			var state = Snapshot.Create(@"d:\daten", new string[] { ".vs\\", "bin\\", "obj\\", "TestResults\\" }, Enumerable.Empty<string>(), new System.Threading.CancellationToken());
-			stopwatch.Benchmark("create");
-			var json = JsonConvert.SerializeObject(state, Formatting.Indented);
-			File.WriteAllText(Path.Combine("d:", $"snapshot {DateTime.Now:yyyy-MM-dd_HHmmss}.json"), json);
-			var stateMine = JsonConvert.DeserializeObject<Snapshot>(json);
+			//Stopwatch stopwatch = Stopwatch.StartNew();
+			//var state = Snapshot.Create(@"d:\daten", new string[] { ".vs\\", "bin\\", "obj\\", "TestResults\\" }, Enumerable.Empty<string>(), new System.Threading.CancellationToken());
+			//stopwatch.Benchmark("create");
+			//var json = JsonConvert.SerializeObject(state, Formatting.Indented);
+			//File.WriteAllText(Path.Combine("d:", $"snapshot {DateTime.Now:yyyy-MM-dd_HHmmss}.json"), json);
+			//var stateMine = JsonConvert.DeserializeObject<Snapshot>(json);
 
-			var oldStateFile = @"D:\snapshot 2022-02-27_095839.json";
-			if (File.Exists(oldStateFile))
-			{
-				var stateOld = JsonConvert.DeserializeObject<Snapshot>(File.ReadAllText(oldStateFile));
-				stopwatch.Benchmark("save");
-			}
+			//var oldStateFile = @"D:\snapshot 2022-02-27_095839.json";
+			//if (File.Exists(oldStateFile))
+			//{
+			//	var stateOld = JsonConvert.DeserializeObject<Snapshot>(File.ReadAllText(oldStateFile));
+			//	stopwatch.Benchmark("save");
+			//}
 		}
 
 		[TestMethod()]
