@@ -9,7 +9,7 @@ using VersionedCopy.PathHelper;
 namespace VersionedCopy
 {
 	using Directory = KeyValuePair<string, DateTime>;
-	using File = KeyValuePair<string, (DateTime creationTime, DateTime writeTime)>;
+	using File = KeyValuePair<string, DateTime>;
 
 	public class Snapshot
 	{
@@ -24,10 +24,10 @@ namespace VersionedCopy
 		}
 
 		public Dictionary<string, DateTime> Directories { get; } = new ();
-		public Dictionary<string, (DateTime creationTime, DateTime writeTime)> Files { get; } = new();
+		public Dictionary<string, DateTime> Files { get; } = new();
 		public DateTime TimeStamp { get; set; }
 
-		public void AddFile(string name, DateTime creationTime, DateTime writeTime) => Files.Add(name, (creationTime, writeTime));
+		public void AddFile(string name, DateTime writeTime) => Files.Add(name, writeTime);
 
 		//public static Snapshot Create(string directory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
 		//{
@@ -76,7 +76,7 @@ namespace VersionedCopy
 					{
 						var relativName = ToRelative(file.FullName);
 						if (regexIgnoreFiles.AnyMatch(relativName)) continue;
-						snapshot.AddFile(relativName, file.CreationTimeUtc, file.LastWriteTimeUtc);
+						snapshot.AddFile(relativName, file.LastWriteTimeUtc);
 					}
 					foreach (var subDir in dir.EnumerateDirectories())
 {

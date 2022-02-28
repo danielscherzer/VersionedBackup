@@ -17,10 +17,10 @@ namespace VersionedCopy
 			List<string> mineNewerFiles = new();
 			foreach (var file in other.Files)
 			{
-				if (mine.Files.TryGetValue(file.Key, out var myDateTime))
+				if (mine.Files.TryGetValue(file.Key, out var myWriteTime))
 				{
 					// files exists in b -> compare write time
-					var secondsDiff = (file.Value.writeTime - myDateTime.writeTime).TotalSeconds;
+					var secondsDiff = (file.Value - myWriteTime).TotalSeconds;
 					if (Math.Abs(secondsDiff) < 3) continue;
 					if (secondsDiff > 0)
 					{

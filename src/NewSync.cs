@@ -37,11 +37,11 @@ namespace VersionedCopy
 			//Handling of single/orphan files/directories on both sides
 
 			//Try load sourc delete history from disc
-			DeleteHistory deleteHistory = Persist.Load<DeleteHistory>(src + FileNameDeleteHistory) ?? new();
+			DeleteHistory deleteHistorySrc = Persist.Load<DeleteHistory>(src + FileNameDeleteHistory) ?? new();
 			//Update delete history with changes from old and source snapshot
-			deleteHistory.Update(Persist.Load<Snapshot>(src + FileNameSnapShot) ?? snapSrc, snapSrc);
+			deleteHistorySrc.Update(Persist.Load<Snapshot>(src + FileNameSnapShot) ?? snapSrc, snapSrc);
 			//Save updated delete history
-			deleteHistory.Save(src + FileNameDeleteHistory);
+			deleteHistorySrc.Save(src + FileNameDeleteHistory);
 			//What is deleted in the delete history should be checked for deletion on destination side
 			//foreach(var fileName in diff.)
 
