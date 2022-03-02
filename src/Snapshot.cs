@@ -20,7 +20,6 @@ namespace VersionedCopy
 
 		//public static Snapshot Create(string directory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
 		//{
-		//	//TODO: add cancellation token
 		//	var root = directory.IncludeTrailingPathDelimiter();
 		//	var dirs = Directory.GetDirectories(directory, "*.*", SearchOption.AllDirectories)
 		//		.ToRelative(root)

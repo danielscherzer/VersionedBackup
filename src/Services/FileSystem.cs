@@ -33,7 +33,7 @@ namespace VersionedCopy.Services
 			});
 		}
 
-		//TODO: make multi threaded
+		//TODO: Could be faster on SSD if multi threaded
 		public IEnumerable<string> EnumerateDirsRecursive(string dir)
 		{
 			var stack = new Stack<string>();

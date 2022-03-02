@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 
 namespace VersionedCopy.Services
@@ -8,7 +9,7 @@ namespace VersionedCopy.Services
 		{
 			var elapsed = stopwatch.Elapsed;
 			stopwatch.Restart();
-			Trace.WriteLine($"{elapsed.TotalMilliseconds,8:F2}ms {message}");
+			Console.WriteLine($"{message} {elapsed.TotalMilliseconds,8:F2}ms");
 		}
 	}
 }

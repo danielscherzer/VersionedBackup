@@ -57,9 +57,8 @@ namespace VersionedCopy
 		public HashSet<FileState> Files { get; } = new(NamedComparer.Singleton);
 		public override string ToString() => Name;
 
-		public static DirectoryState Create(string directory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
+		public static DirectoryState Create(string directory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, System.Threading.CancellationToken cancellationToken)
 		{
-			//TODO: add cancellation token
 			var root = new DirectoryInfo(directory);
 			if (!root.Exists) throw new DirectoryNotFoundException(directory);
 			var regexIgnoreDirectories = ignoreDirectories.CreateIgnoreRegex().ToList();
@@ -76,11 +75,13 @@ namespace VersionedCopy
 				{
 					foreach (var file in dir.EnumerateFiles())
 					{
+						if (cancellationToken.IsCancellationRequested) return rootState;
 						if (regexIgnoreFiles.AnyMatch(file.FullName)) continue;
 						dirState.Files.Add(new FileState(file.Name, file.LastWriteTimeUtc));
 					}
 					foreach (var subDir in dir.EnumerateDirectories())
 					{
+						if (cancellationToken.IsCancellationRequested) return rootState;
 						if (regexIgnoreDirectories.AnyMatch(subDir.FullName + Path.DirectorySeparatorChar)) continue;
 						var subDirState = new DirectoryState(subDir.Name);
 						dirState.Directories.Add(subDirState);

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
@@ -9,6 +11,9 @@ using VersionedCopy.Services;
 
 namespace VersionedCopy
 {
+	using Entry = KeyValuePair<string, DateTime>;
+
+
 	public class AlgorithmEnv
 	{
 		/// <summary>
@@ -41,61 +46,69 @@ namespace VersionedCopy
 				.ToHashSet(), Token);
 		}
 
-		internal void Copy(string src, string dst, List<string> srcNew)
+		internal void Copy(string src, string dst, IEnumerable<Entry> srcNew, Snapshot snapDst)
 		{
-			foreach (var fileName in srcNew)
+			foreach (var file in srcNew)
 			{
 				if (Token.IsCancellationRequested) return;
+				var fileName = file.Key;
 				if (Snapshot.IsFile(fileName))
 				{
-					if(FileSystem.Copy(src + fileName, dst + fileName)) //copy new
+					if (FileSystem.Copy(src + fileName, dst + fileName)) //copy new
 					{
-						Output.Report($"New file '{fileName}'");
+						snapDst.Entries[fileName] = file.Value;
+						Output.Report($"New file '{dst + fileName}'");
 					}
 				}
 				else
 				{
 					if(FileSystem.CreateDirectory(dst + fileName))
 					{
-						Output.Report($"Create directory '{fileName}'");
+						snapDst.Entries[fileName] = file.Value;
+						Output.Report($"Create directory '{dst + fileName}'");
 					}
 				}
 			}
 		}
 
-		internal void MoveAway(string root, List<string> srcToDelete)
+		internal void MoveAway(string root, IEnumerable<Entry> srcToDelete, Snapshot snapshot)
 		{
-			foreach (var fileName in srcToDelete)
+			foreach (var file in srcToDelete)
 			{
 				if (Token.IsCancellationRequested) return;
+				var fileName = file.Key;
 				//move deleted to old
 				if (Snapshot.IsFile(fileName))
 				{
 					if(FileSystem.MoveFile(root + fileName, Options.OldFilesFolder + fileName))
 					{
-						Output.Report($"Backup file '{fileName}'");
+						snapshot.Entries.Remove(fileName);
+						Output.Report($"Backup deleted file '{root + fileName}'");
 					}
 				}
 				else
 				{
 					if(FileSystem.MoveDirectory(root + fileName, Options.OldFilesFolder + fileName))
 					{
-						Output.Report($"Delete directory '{fileName}'");
+						snapshot.Entries.Remove(fileName);
+						Output.Report($"Backup deleted directory '{root + fileName}'");
 					}
 				}
 			}
 		}
 
-		internal void UpdateFiles(string src, string dst, IEnumerable<string> updatedFiles)
+		internal void UpdateFiles(string src, string dst, IEnumerable<Entry> updatedFiles, Snapshot snapDst)
 		{
-			foreach (var fileName in updatedFiles)
+			foreach (var file in updatedFiles)
 			{
 				if (Token.IsCancellationRequested) return;
+				var fileName = file.Key;
 				if (FileSystem.MoveFile(dst + fileName, Options.OldFilesFolder + fileName)) //move away old
 				{
 					if (FileSystem.Copy(src + fileName, dst + fileName)) //copy new
 					{
-						Output.Report($"Replace file '{fileName}'");
+						snapDst.Entries[fileName] = file.Value;
+						Output.Report($"Update file '{dst + fileName}'");
 					}
 				}
 			}

@@ -9,21 +9,25 @@ namespace VersionedCopy
 {
 	public static class Program
 	{
-		private static void Run(IOptions options, Output report, CancellationToken token, Action<AlgorithmEnv> algo)
+		private static void Run(IOptions options, Output output, CancellationToken token, Action<AlgorithmEnv> algo)
 		{
+			output.Report("VersionedCopy");
+			if (options.DryRun) output.Report("Read only mode");
+			output.Report($"Ignore directories: { string.Join(';', options.IgnoreDirectories)}");
+			output.Report($"Ignore files: { string.Join(';', options.IgnoreFiles)}");
 			if (options.SourceDirectory == options.DestinationDirectory) throw new ArgumentException("Source and destination must be different!");
 #if DEBUG
 			Stopwatch stopwatch = Stopwatch.StartNew();
 #endif
-			var fileSystem = new FileSystem(report, options.DryRun);
+			var fileSystem = new FileSystem(output, options.DryRun);
 			if (!fileSystem.ExistsDirectory(options.SourceDirectory))
 			{
-				report.Error($"Source directory '{options.SourceDirectory}' does not exist");
+				output.Error($"Source directory '{options.SourceDirectory}' does not exist");
 				return;
 			}
-			algo(new AlgorithmEnv(options, report, fileSystem, token));
+			algo(new AlgorithmEnv(options, output, fileSystem, token));
 #if DEBUG
-			stopwatch.Benchmark("Copy");
+			stopwatch.Benchmark("Total");
 #endif
 		}
 

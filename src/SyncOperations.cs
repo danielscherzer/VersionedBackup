@@ -3,9 +3,11 @@ using System;
 
 namespace VersionedCopy
 {
+	using Entry = KeyValuePair<string, DateTime>;
+
 	public static class SyncOperations
 	{
-		public static void NewAndToDelete(Snapshot mine, Snapshot other, DateTime lastSync, out List<string> newEntries, out List<string> toDeleteEntries)
+		public static void FindNewAndToDelete(Snapshot mine, Snapshot other, DateTime lastSync, out List<Entry> newEntries, out List<Entry> toDeleteEntries)
 		{
 			newEntries = new();
 			toDeleteEntries = new();
@@ -13,16 +15,16 @@ namespace VersionedCopy
 			{
 				if (single.Value > lastSync)
 				{
-					newEntries.Add(single.Key);
+					newEntries.Add(single);
 				}
 				else
 				{
-					toDeleteEntries.Add(single.Key);
+					toDeleteEntries.Add(single);
 				}
 			}
 		}
 
-		public static void UpdatedFiles(Snapshot mine, Snapshot other, out List<string> mineUpdatedFiles, out List<string> otherUpdatedFiles)
+		public static void FindUpdatedFiles(Snapshot mine, Snapshot other, out List<Entry> mineUpdatedFiles, out List<Entry> otherUpdatedFiles)
 		{
 			mineUpdatedFiles = new();
 			otherUpdatedFiles = new();
@@ -30,16 +32,16 @@ namespace VersionedCopy
 			{
 				if (mine.Entries.TryGetValue(file.Key, out var writeTime))
 				{
-					// files exists in b -> compare write time
+					// files exists in b -> compare time stamp
 					var secondsDiff = (file.Value - writeTime).TotalSeconds;
 					if (Math.Abs(secondsDiff) < 3) continue;
 					if (secondsDiff > 0)
 					{
-						otherUpdatedFiles.Add(file.Key);
+						otherUpdatedFiles.Add(file);
 					}
 					else
 					{
-						mineUpdatedFiles.Add(file.Key);
+						mineUpdatedFiles.Add(new Entry(file.Key, writeTime));
 					}
 				}
 			}

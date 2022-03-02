@@ -52,7 +52,7 @@ namespace VersionedCopy.Services
 			string directory = dst + subDir;
 			if (fileSystem.CreateDirectory(directory))
 			{
-				output.Report($"Create directory '{subDir}'");
+				output.Report($"Create directory '{directory}'");
 			}
 		}
 

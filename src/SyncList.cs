@@ -22,7 +22,7 @@ namespace VersionedCopy
 			if (matchingSyncs.Any())
 			{
 				LastSyncTime = srcSyncs[matchingSyncs.First()];
-				// TODO: remove old sync because
+				// Remove old sync because new sync will have new guid
 				srcSyncs.Remove(matchingSyncs.First());
 				dstSyncs.Remove(matchingSyncs.First());
 			}
@@ -30,20 +30,20 @@ namespace VersionedCopy
 			{
 				LastSyncTime = default;
 			}
+			Guid guid = Guid.NewGuid();
+			CurrentSyncTime = DateTime.UtcNow;
+			dstSyncs[guid] = CurrentSyncTime;
+			srcSyncs[guid] = CurrentSyncTime;
 
 			this.src = src;
 			this.dst = dst;
 		}
 
+		public DateTime CurrentSyncTime { get; }
 		public DateTime LastSyncTime { get; }
 
-		//TODO: Dissallow to call mutliple times _> Dipsosed
 		public void Save()
 		{
-			Guid guid = Guid.NewGuid();
-			var timeStamp = DateTime.UtcNow;
-			dstSyncs[guid] = timeStamp;
-			srcSyncs[guid] = timeStamp;
 			Persist.Save(srcSyncs, src + FileNameSyncList);
 			Persist.Save(dstSyncs, dst + FileNameSyncList);
 		}
