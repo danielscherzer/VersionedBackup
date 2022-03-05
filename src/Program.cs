@@ -1,6 +1,7 @@
 using CommandLine;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using VersionedCopy.Interfaces;
 using VersionedCopy.Services;
@@ -12,15 +13,15 @@ namespace VersionedCopy
 		private static void Run(IOptions options, Output output, CancellationToken token, Action<AlgorithmEnv> algo)
 		{
 			output.Report("VersionedCopy");
-			if (options.DryRun) output.Report("Read only mode");
+			if (options.ReadOnly) output.Report("Read only mode");
 			output.Report($"Ignore directories: { string.Join(';', options.IgnoreDirectories)}");
 			output.Report($"Ignore files: { string.Join(';', options.IgnoreFiles)}");
 			if (options.SourceDirectory == options.DestinationDirectory) throw new ArgumentException("Source and destination must be different!");
 #if DEBUG
 			Stopwatch stopwatch = Stopwatch.StartNew();
 #endif
-			var fileSystem = new FileSystem(output, options.DryRun);
-			if (!fileSystem.ExistsDirectory(options.SourceDirectory))
+			var fileSystem = new FileSystem(output, options.ReadOnly);
+			if (!Directory.Exists(options.SourceDirectory))
 			{
 				output.Error($"Source directory '{options.SourceDirectory}' does not exist");
 				return;

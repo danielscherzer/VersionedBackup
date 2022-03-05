@@ -44,7 +44,7 @@ namespace VersionedCopy.Tests
 
 			var srcF1 = Create(src, "a\\b\\c\\F1");
 			var dstF1 = Create(dst, "a\\b\\c\\F1");
-			UpdateWriteTime(dst, "a\\b\\c\\F1", DateTime.Now.AddSeconds(5));
+			UpdateWriteTime(dst, "a\\b\\c\\F1", DateTime.Now.AddSeconds(10));
 
 			Program.Main(new string[] { "mirror", src, dst, old });
 

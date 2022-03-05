@@ -11,7 +11,7 @@ namespace VersionedCopy.Services
 	public class Options : IOptions
 	{
 		public Options(string sourceDirectory, string destinationDirectory, string oldFilesFolder
-			, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, bool dryRun)
+			, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, bool readOnly)
 		{
 			SourceDirectory = (sourceDirectory).IncludeTrailingPathDelimiter();
 			DestinationDirectory = (destinationDirectory).IncludeTrailingPathDelimiter();
@@ -25,7 +25,7 @@ namespace VersionedCopy.Services
 			}
 			IgnoreDirectories = (ignoreDirectories ?? throw new ArgumentNullException(nameof(ignoreDirectories))).Select(dir => dir.NormalizePathDelimiter().IncludeTrailingPathDelimiter());
 			IgnoreFiles = (ignoreFiles ?? throw new ArgumentNullException(nameof(ignoreFiles))).Select(file => file.NormalizePathDelimiter());
-			DryRun = dryRun;
+			ReadOnly = readOnly;
 		}
 
 		[Value(0, Required = true, HelpText = "The source directory of the to copy operation.")]
@@ -43,7 +43,7 @@ namespace VersionedCopy.Services
 		[Option(longName: "ignoreFiles", Required = false, HelpText = "A list of ignored files.")]
 		public IEnumerable<string> IgnoreFiles { get; } = Enumerable.Empty<string>();
 
-		[Option(longName: "dryRun", Default = false, Required = false, HelpText = "Only list operations. Do not change file system.")]
-		public bool DryRun { get; }
+		[Option(longName: "readOnly", Default = false, Required = false, HelpText = "Only list operations. Do not change file system.")]
+		public bool ReadOnly { get; }
 	}
 }

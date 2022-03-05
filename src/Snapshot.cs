@@ -67,7 +67,7 @@ namespace VersionedCopy
 						snapshot.Add(relativName, file.LastWriteTimeUtc);
 					}
 					foreach (var subDir in dir.EnumerateDirectories())
-{
+					{
 						if (cancellationToken.IsCancellationRequested) return snapshot;
 						var relativName = ToRelative(subDir.FullName) + Path.DirectorySeparatorChar;
 						if (regexIgnoreDirectories.AnyMatch(Path.DirectorySeparatorChar + relativName)) continue;

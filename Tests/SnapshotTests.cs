@@ -1,10 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
-using System;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using VersionedCopy.Services;
 using static VersionedCopy.Tests.FileSystemHelper;
 
 namespace VersionedCopy.Tests
@@ -38,7 +33,7 @@ namespace VersionedCopy.Tests
 			foreach (var item in list) Create(src, item);
 
 			Snapshot snapShot = Snapshot.Create(src, Enumerable.Empty<string>(), Enumerable.Empty<string>(), new System.Threading.CancellationToken());
-			foreach(var item in list)
+			foreach (var item in list)
 			{
 				Assert.IsTrue(snapShot.Entries.ContainsKey(item));
 			}

@@ -7,6 +7,7 @@ namespace VersionedCopy.Services
 	{
 		public static void Save(this object obj, string fileName)
 		{
+			//var json = JsonSerializer.Serialize(obj);
 			var json = JsonConvert.SerializeObject(obj, Formatting.Indented);
 			File.WriteAllText(fileName, json);
 		}
@@ -15,6 +16,7 @@ namespace VersionedCopy.Services
 		{
 			if (!File.Exists(fileName)) return default;
 			var json = File.ReadAllText(fileName);
+			//return JsonSerializer.Deserialize<TData>(json);
 			return JsonConvert.DeserializeObject<TData>(json);
 		}
 	}

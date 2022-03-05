@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using VersionedCopy.Interfaces;
-using VersionedCopy.PathHelper;
 
 namespace VersionedCopy.Services
 {
@@ -31,65 +28,6 @@ namespace VersionedCopy.Services
 			{
 				File.Copy(srcFilePath, dstFilePath);
 			});
-		}
-
-		//TODO: Could be faster on SSD if multi threaded
-		public IEnumerable<string> EnumerateDirsRecursive(string dir)
-		{
-			var stack = new Stack<string>();
-			if (!Directory.Exists(dir)) yield break;
-			stack.Push(dir);
-			yield return dir.IncludeTrailingPathDelimiter();
-			while (stack.Count > 0)
-			{
-				foreach (var subDir in Directory.EnumerateDirectories(stack.Pop()))
-				{
-					yield return subDir + Path.DirectorySeparatorChar;
-					stack.Push(subDir);
-				}
-			}
-		}
-
-		public IEnumerable<string> EnumerateFiles(IEnumerable<string> dirs) =>
-			from subDir in dirs.AsParallel()
-			from file in Directory.EnumerateFiles(subDir)
-			select file;
-
-		public bool ExistsDirectory(string name) => Directory.Exists(name);
-
-		public bool ExistsFile(string name) => File.Exists(name);
-
-		public bool HasChanged(string source, string destination)
-		{
-			try
-			{
-				var srcFileInfo = new FileInfo(source);
-				var dstFileInfo = new FileInfo(destination);
-				TimeSpan writeDiff = srcFileInfo.LastWriteTimeUtc.Subtract(dstFileInfo.LastWriteTimeUtc);
-				return (Math.Abs(writeDiff.TotalSeconds) > 5 || srcFileInfo.Length != dstFileInfo.Length);
-			}
-			catch (SystemException e)
-			{
-				ErrorOutput.Error(e.Message);
-				return false;
-			}
-		}
-
-		public int CompareAge(string source, string destination)
-		{
-			try
-			{
-				var srcFileInfo = new FileInfo(source);
-				var dstFileInfo = new FileInfo(destination);
-				TimeSpan writeDiff = srcFileInfo.LastWriteTimeUtc - dstFileInfo.LastWriteTimeUtc;
-				if (Math.Abs(writeDiff.TotalSeconds) < 3) return 0;
-				return Math.Sign(writeDiff.TotalSeconds);
-			}
-			catch (SystemException e)
-			{
-				ErrorOutput.Error(e.Message);
-				return 0;
-			}
 		}
 
 		public bool MoveDirectory(string source, string destination)

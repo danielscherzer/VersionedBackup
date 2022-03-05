@@ -2,17 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using VersionedCopy.Interfaces;
-using VersionedCopy.PathHelper;
-using VersionedCopy.Services;
 
 namespace VersionedCopy
 {
 	using Entry = KeyValuePair<string, DateTime>;
-
 
 	public class AlgorithmEnv
 	{
@@ -25,62 +21,81 @@ namespace VersionedCopy
 		/// <param name="token"><see cref="CancellationToken"/></param>
 		public AlgorithmEnv(IOptions options, IOutput output, IFileSystem fileSystem, CancellationToken token)
 		{
-			Op = new Operations(output, options, fileSystem);
 			Options = options;
 			Output = output;
 			FileSystem = fileSystem;
 			Token = token;
-		}
-
-		public Task<string[]> EnumerateDirsAsync(string directory)
-		{
-			return Task.Run(FileSystem.EnumerateDirsRecursive(directory)
-				.Ignore(Options.IgnoreDirectories).ToArray, Token);
-		}
-
-		public Task<HashSet<string>> EnumerateRelativeFilesAsync(string root, IEnumerable<string> directories)
-		{
-			root = root.IncludeTrailingPathDelimiter();
-			return Task.Run(()
-				=> FileSystem.EnumerateFiles(directories).Ignore(Options.IgnoreFiles).ToRelative(root)
-				.ToHashSet(), Token);
-		}
-
-		internal void Copy(string src, string dst, IEnumerable<Entry> srcNew, Snapshot snapDst)
-		{
-			foreach (var file in srcNew)
+			if (!Directory.Exists(options.DestinationDirectory))
 			{
-				if (Token.IsCancellationRequested) return;
-				var fileName = file.Key;
-				if (Snapshot.IsFile(fileName))
+				if (fileSystem.CreateDirectory(options.DestinationDirectory))
 				{
-					if (FileSystem.Copy(src + fileName, dst + fileName)) //copy new
-					{
-						snapDst.Entries[fileName] = file.Value;
-						Output.Report($"New file '{dst + fileName}'");
-					}
-				}
-				else
-				{
-					if(FileSystem.CreateDirectory(dst + fileName))
-					{
-						snapDst.Entries[fileName] = file.Value;
-						Output.Report($"Create directory '{dst + fileName}'");
-					}
+					output.Report($"Create directory '{options.DestinationDirectory}'");
 				}
 			}
 		}
 
-		internal void MoveAway(string root, IEnumerable<Entry> srcToDelete, Snapshot snapshot)
+		internal void Copy(string src, string dst, IEnumerable<Entry> srcNew)
 		{
-			foreach (var file in srcToDelete)
+			try
+			{
+				// create directories
+				Parallel.ForEach(srcNew.Where(file => !Snapshot.IsFile(file.Key)), new ParallelOptions { CancellationToken = Token }, file =>
+				{
+					var fileName = file.Key;
+					if (FileSystem.CreateDirectory(dst + fileName))
+					{
+						Output.Report($"Create directory '{dst + fileName}'");
+					}
+				});
+				// files
+				Parallel.ForEach(srcNew.Where(file => Snapshot.IsFile(file.Key)), new ParallelOptions { CancellationToken = Token }, file =>
+				{
+					var fileName = file.Key;
+					if (FileSystem.Copy(src + fileName, dst + fileName))
+					{
+						Output.Report($"New file '{dst + fileName}'");
+					}
+				});
+			}
+			catch (OperationCanceledException)
+			{
+			}
+		}
+
+		internal void Copy(string src, string dst, IEnumerable<Entry> srcNew, Snapshot snapDst)
+		{
+			foreach (var file in srcNew.Where(file => !Snapshot.IsFile(file.Key)))
+			{
+				var fileName = file.Key;
+				if (Token.IsCancellationRequested) return;
+				if (FileSystem.CreateDirectory(dst + fileName))
+				{
+					snapDst.Entries[fileName] = file.Value;
+					Output.Report($"Create directory '{dst + fileName}'");
+				}
+			}
+			foreach (var file in srcNew.Where(file => Snapshot.IsFile(file.Key)))
+			{
+				var fileName = file.Key;
+				if (Token.IsCancellationRequested) return;
+				if (FileSystem.Copy(src + fileName, dst + fileName))
+				{
+					snapDst.Entries[fileName] = file.Value;
+					Output.Report($"New file '{dst + fileName}'");
+				}
+			}
+		}
+
+		internal void MoveAway(string root, IEnumerable<Entry> toDelete, Snapshot snapshot)
+		{
+			foreach (var file in toDelete)
 			{
 				if (Token.IsCancellationRequested) return;
 				var fileName = file.Key;
 				//move deleted to old
 				if (Snapshot.IsFile(fileName))
 				{
-					if(FileSystem.MoveFile(root + fileName, Options.OldFilesFolder + fileName))
+					if (FileSystem.MoveFile(root + fileName, Options.OldFilesFolder + fileName))
 					{
 						snapshot.Entries.Remove(fileName);
 						Output.Report($"Backup deleted file '{root + fileName}'");
@@ -88,12 +103,47 @@ namespace VersionedCopy
 				}
 				else
 				{
-					if(FileSystem.MoveDirectory(root + fileName, Options.OldFilesFolder + fileName))
+					if (FileSystem.MoveDirectory(root + fileName, Options.OldFilesFolder + fileName))
 					{
 						snapshot.Entries.Remove(fileName);
 						Output.Report($"Backup deleted directory '{root + fileName}'");
 					}
 				}
+			}
+		}
+
+		internal void SetTimeStamp(string fileName, DateTime newTime)
+		{
+			Output.Report($"New time stamp '{fileName}'");
+			if (Options.ReadOnly) return;
+			if (Snapshot.IsFile(fileName))
+			{
+				File.SetLastWriteTimeUtc(fileName, newTime);
+			}
+			else
+			{
+				Directory.SetCreationTimeUtc(fileName, newTime);
+			}
+		}
+
+		internal void UpdateFiles(string src, string dst, IEnumerable<Entry> updatedFiles)
+		{
+			try
+			{
+				Parallel.ForEach(updatedFiles, new ParallelOptions { CancellationToken = Token }, file =>
+				{
+					var fileName = file.Key;
+					if (FileSystem.MoveFile(dst + fileName, Options.OldFilesFolder + fileName)) //move away old
+					{
+						if (FileSystem.Copy(src + fileName, dst + fileName)) //copy new
+						{
+							Output.Report($"Update file '{dst + fileName}'");
+						}
+					}
+				});
+			}
+			catch (OperationCanceledException)
+			{
 			}
 		}
 
@@ -118,6 +168,5 @@ namespace VersionedCopy
 		public IOutput Output { get; }
 		public IFileSystem FileSystem { get; }
 		public CancellationToken Token { get; }
-		public Operations Op { get; }
 	}
 }

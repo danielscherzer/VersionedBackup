@@ -11,29 +11,22 @@ namespace VersionedCopy.Tests
 		{
 			var src = ToPath("src");
 			var dst = ToPath("dst");
-			Create(src, "F1");
-			Create(src, "F2");
-			Create(src, "a\\F1");
-			Create(src, "b\\");
+			var listSrc = new string[] { "F1", "F2", "a\\F1", "a\\F2", "a\\F3", "a\\F4", "b\\", "c\\", "a\\b\\c\\d" };
+			foreach (var item in listSrc) Create(src, item);
 
+			var listDst = new string[] { "F1", "F3", "x\\", "x\\F2" };
+			foreach (var item in listDst) Create(dst, item);
 			Create(dst, "F1");
 			Create(dst, "F3");
 			Create(dst, "x\\");
 
 			Program.Main(new string[] { "sync", src, dst });
 
-			Assert.IsTrue(Exists(src, "F3"));
-			Assert.IsTrue(Exists(src, "x\\"));
-
-			Assert.IsTrue(Exists(dst, "F2"));
-			Assert.IsTrue(Exists(dst, "a\\F1"));
-			Assert.IsTrue(Exists(dst, "b\\"));
+			foreach (var item in listSrc) Assert.IsTrue(Exists(dst, item));
+			foreach (var item in listDst) Assert.IsTrue(Exists(src, item));
 		}
 
 		[TestCleanup]
-		public void TestCleanup()
-		{
-			Cleanup();
-		}
+		public void TestCleanup() => Cleanup();
 	}
 }

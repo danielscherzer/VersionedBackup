@@ -13,19 +13,9 @@ namespace VersionedCopy.PathHelper
 
 		public static bool AnyMatch(this IEnumerable<Regex> regex, string input) => regex.Any(regex => regex.IsMatch(input));
 
-		public static IEnumerable<string> Ignore(this IEnumerable<string> paths, IEnumerable<string> ignorePaths)
-		{
-			var regexIgnorePaths = ignorePaths.Select(ignorePath => CreateIgnoreRegex(ignorePath)).ToList();
-
-			return paths.Where(path => !regexIgnorePaths.Any(regex => regex.IsMatch(path)));
-		}
-
 		public static string IncludeTrailingPathDelimiter(this string path) => Path.EndsInDirectorySeparator(path) ? path : path + Path.DirectorySeparatorChar;
 
 		public static string NormalizePathDelimiter(this string path) => path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
-
-		public static IEnumerable<string> ToRelative(this IEnumerable<string> paths, string prefix)
-			=> paths.Select(path => path[prefix.Length..]);
 
 		public static string WildcardToRegex(this string pattern)
 		{

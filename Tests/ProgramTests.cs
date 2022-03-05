@@ -15,15 +15,15 @@ namespace VersionedCopy.Tests
 		[DataRow("mirror", "c:\\src", "d:\\dst")]
 		[DataRow("update", "c:\\src", "d:\\dst")]
 		[DataRow("sync", "c:\\src", "d:\\dst")]
-		[DataRow("sync", "d:\\daten", "e:\\daten", "--dryRun")]
-		[DataRow("sync", "d:\\daten", "e:\\daten", "--dryRun", "--ignoreDirectories", ".vs", "bin", "obj", "TestResults", "--ignoreFiles", "desktop.ini", @"Visual Studio 2022\Visualizers\attribcache140.bin")]
+		[DataRow("sync", "d:\\daten", "e:\\daten", "--readOnly")]
+		[DataRow("sync", "d:\\daten", "e:\\daten", "--readOnly", "--ignoreDirectories", ".vs", "bin", "obj", "TestResults", "--ignoreFiles", "desktop.ini", @"Visual Studio 2022\Visualizers\attribcache140.bin")]
 		public void ParseArgumentsTest(params string[] args)
 		{
 			void AllTest(IOptions options)
 			{
 				Assert.AreEqual(args[1].IncludeTrailingPathDelimiter(), options.SourceDirectory);
 				Assert.AreEqual(args[2].IncludeTrailingPathDelimiter(), options.DestinationDirectory);
-				if (args.Length > 3) Assert.IsTrue(options.DryRun);
+				if (args.Length > 3) Assert.IsTrue(options.ReadOnly);
 				var ignoreDirs = new string[] { ".vs\\", "bin\\", "obj\\", "TestResults\\" };
 				if (args.Length > 7) CollectionAssert.AreEquivalent(ignoreDirs, options.IgnoreDirectories.ToArray());
 				var ignoreFiles = new string[] { "desktop.ini", @"Visual Studio 2022\Visualizers\attribcache140.bin" };
