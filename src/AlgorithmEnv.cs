@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using VersionedCopy.Interfaces;
+using VersionedCopy.PathHelper;
+using VersionedCopy.Services;
 
 namespace VersionedCopy
 {
@@ -12,27 +14,45 @@ namespace VersionedCopy
 
 	public class AlgorithmEnv
 	{
-		/// <summary>
-		/// optimize common update case: assume two directory structures are very similar
-		/// 1=> read multi-threaded all directories and then all files
-		/// 2=> optimize compare of almost all files for date time and size
-		/// </summary>
-		/// <param name="options"></param>
-		/// <param name="token"><see cref="CancellationToken"/></param>
-		public AlgorithmEnv(IOptions options, IOutput output, IFileSystem fileSystem, CancellationToken token)
+		public AlgorithmEnv(IOptions options, IOutput output, CancellationToken token)
 		{
 			Options = options;
 			Output = output;
-			FileSystem = fileSystem;
+			FileOperations = new FileOperations(output, options.ReadOnly);
 			Token = token;
+			output.Report("VersionedCopy");
+			if (options.ReadOnly) output.Report("Read only mode");
+			output.Report($"Ignore directories: { string.Join(';', options.IgnoreDirectories)}");
+			output.Report($"Ignore files: { string.Join(';', options.IgnoreFiles)}");
+			if (options.SourceDirectory == options.DestinationDirectory)
+			{
+				output.Error("Source and destination must be different!");
+				return;
+
+			}
+			if (!Directory.Exists(options.SourceDirectory))
+			{
+				output.Error($"Source directory '{options.SourceDirectory}' does not exist");
+				return;
+			}
 			if (!Directory.Exists(options.DestinationDirectory))
 			{
-				if (fileSystem.CreateDirectory(options.DestinationDirectory))
+				if (options.ReadOnly)
 				{
-					output.Report($"Create directory '{options.DestinationDirectory}'");
+					output.Error($"Destination directory '{options.DestinationDirectory}' does not exist");
+					return;
+				}
+				else
+				{
+					if (FileOperations.CreateDirectory(options.DestinationDirectory))
+					{
+						output.Report($"Create directory '{options.DestinationDirectory}'");
+					}
 				}
 			}
 		}
+
+		public const string FileNameSnapShot = ".versioned.copy.snapshot.json";
 
 		internal void Copy(string src, string dst, IEnumerable<Entry> srcNew)
 		{
@@ -42,7 +62,7 @@ namespace VersionedCopy
 				Parallel.ForEach(srcNew.Where(file => !Snapshot.IsFile(file.Key)), new ParallelOptions { CancellationToken = Token }, file =>
 				{
 					var fileName = file.Key;
-					if (FileSystem.CreateDirectory(dst + fileName))
+					if (FileOperations.CreateDirectory(dst + fileName))
 					{
 						Output.Report($"Create directory '{dst + fileName}'");
 					}
@@ -51,7 +71,7 @@ namespace VersionedCopy
 				Parallel.ForEach(srcNew.Where(file => Snapshot.IsFile(file.Key)), new ParallelOptions { CancellationToken = Token }, file =>
 				{
 					var fileName = file.Key;
-					if (FileSystem.Copy(src + fileName, dst + fileName))
+					if (FileOperations.Copy(src + fileName, dst + fileName))
 					{
 						Output.Report($"New file '{dst + fileName}'");
 					}
@@ -68,7 +88,7 @@ namespace VersionedCopy
 			{
 				var fileName = file.Key;
 				if (Token.IsCancellationRequested) return;
-				if (FileSystem.CreateDirectory(dst + fileName))
+				if (FileOperations.CreateDirectory(dst + fileName))
 				{
 					snapDst.Entries[fileName] = file.Value;
 					Output.Report($"Create directory '{dst + fileName}'");
@@ -78,12 +98,24 @@ namespace VersionedCopy
 			{
 				var fileName = file.Key;
 				if (Token.IsCancellationRequested) return;
-				if (FileSystem.Copy(src + fileName, dst + fileName))
+				if (FileOperations.Copy(src + fileName, dst + fileName))
 				{
 					snapDst.Entries[fileName] = file.Value;
 					Output.Report($"New file '{dst + fileName}'");
 				}
 			}
+		}
+
+		internal static Snapshot? LoadSnapshot(string root)
+		{
+			return Persist.Load<Snapshot>(Path.Combine(root, FileNameSnapShot));
+		}
+
+		internal static void SaveSnapshot(Snapshot snap, string root) => Persist.Save(snap, Path.Combine(root, FileNameSnapShot));
+
+		internal Snapshot CreateSnapshot(string root)
+		{
+			return Snapshot.Create(root, Options.IgnoreDirectories, Options.IgnoreFiles, Token);
 		}
 
 		internal void MoveAway(string root, IEnumerable<Entry> toDelete, Snapshot snapshot)
@@ -95,7 +127,7 @@ namespace VersionedCopy
 				//move deleted to old
 				if (Snapshot.IsFile(fileName))
 				{
-					if (FileSystem.MoveFile(root + fileName, Options.OldFilesFolder + fileName))
+					if (FileOperations.MoveFile(root + fileName, Options.OldFilesFolder + fileName)) //TODO: if different drives, move will not work
 					{
 						snapshot.Entries.Remove(fileName);
 						Output.Report($"Backup deleted file '{root + fileName}'");
@@ -103,7 +135,7 @@ namespace VersionedCopy
 				}
 				else
 				{
-					if (FileSystem.MoveDirectory(root + fileName, Options.OldFilesFolder + fileName))
+					if (FileOperations.MoveDirectory(root + fileName, Options.OldFilesFolder + fileName))
 					{
 						snapshot.Entries.Remove(fileName);
 						Output.Report($"Backup deleted directory '{root + fileName}'");
@@ -133,9 +165,9 @@ namespace VersionedCopy
 				Parallel.ForEach(updatedFiles, new ParallelOptions { CancellationToken = Token }, file =>
 				{
 					var fileName = file.Key;
-					if (FileSystem.MoveFile(dst + fileName, Options.OldFilesFolder + fileName)) //move away old
+					if (FileOperations.MoveFile(dst + fileName, Options.OldFilesFolder + fileName)) //move away old
 					{
-						if (FileSystem.Copy(src + fileName, dst + fileName)) //copy new
+						if (FileOperations.Copy(src + fileName, dst + fileName)) //copy new
 						{
 							Output.Report($"Update file '{dst + fileName}'");
 						}
@@ -153,9 +185,9 @@ namespace VersionedCopy
 			{
 				if (Token.IsCancellationRequested) return;
 				var fileName = file.Key;
-				if (FileSystem.MoveFile(dst + fileName, Options.OldFilesFolder + fileName)) //move away old
+				if (FileOperations.MoveFile(dst + fileName, Options.OldFilesFolder + fileName)) //move away old
 				{
-					if (FileSystem.Copy(src + fileName, dst + fileName)) //copy new
+					if (FileOperations.Copy(src + fileName, dst + fileName)) //copy new
 					{
 						snapDst.Entries[fileName] = file.Value;
 						Output.Report($"Update file '{dst + fileName}'");
@@ -165,8 +197,9 @@ namespace VersionedCopy
 		}
 
 		public IOptions Options { get; }
-		public IOutput Output { get; }
-		public IFileSystem FileSystem { get; }
 		public CancellationToken Token { get; }
+		
+		private FileOperations FileOperations { get; }
+		private IOutput Output { get; }
 	}
 }

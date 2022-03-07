@@ -4,9 +4,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using VersionedCopy.PathHelper;
 
-namespace VersionedCopy
+namespace VersionedCopy.PathHelper
 {
 	public interface INamed
 	{

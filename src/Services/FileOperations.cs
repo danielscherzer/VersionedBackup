@@ -4,9 +4,9 @@ using VersionedCopy.Interfaces;
 
 namespace VersionedCopy.Services
 {
-	internal class FileSystem : IFileSystem
+	internal class FileOperations
 	{
-		public FileSystem(IOutput errorOutput, bool readOnly)
+		public FileOperations(IOutput errorOutput, bool readOnly)
 		{
 			ErrorOutput = errorOutput ?? throw new ArgumentNullException(nameof(errorOutput));
 			ReadOnly = readOnly;

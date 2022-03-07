@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using VersionedCopy.PathHelper;
 
-namespace VersionedCopy
+namespace VersionedCopy.PathHelper
 {
 	public class Snapshot
 	{
@@ -18,29 +17,6 @@ namespace VersionedCopy
 
 		public IEnumerable<KeyValuePair<string, DateTime>> Files() => Entries.Where(entry => IsFile(entry.Key));
 
-		//public static Snapshot Create(string directory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
-		//{
-		//	var root = directory.IncludeTrailingPathDelimiter();
-		//	var dirs = Directory.GetDirectories(directory, "*.*", SearchOption.AllDirectories)
-		//		.ToRelative(root)
-		//		.Select(dir => dir.IncludeTrailingPathDelimiter())
-		//		.Ignore(ignoreDirectories);
-
-		//	var dirHash = dirs.ToHashSet();
-		//	var regexIgnoreFiles = ignoreFiles.CreateIgnoreRegex().ToList();
-
-		//	var files = from subDir in dirHash.Prepend("")
-		//				from file in Directory.EnumerateFiles(root + subDir)
-		//				where !regexIgnoreFiles.AnyMatch(file)
-		//				select file;
-
-		//	var fileInfo = files.ToDictionary(file => file[root.Length..],
-		//		file => File.GetLastWriteTimeUtc(file)
-		//		//file => DateTime.Now
-		//		);
-		//	return new Snapshot(dirHash, fileInfo, DateTime.Now);
-		//}
-
 		public static Snapshot Create(string directory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, System.Threading.CancellationToken cancellationToken)
 		{
 			directory = directory.IncludeTrailingPathDelimiter();
@@ -49,7 +25,7 @@ namespace VersionedCopy
 			var regexIgnoreDirectories = ignoreDirectories.CreateIgnoreRegex().ToList();
 			var regexIgnoreFiles = ignoreFiles.CreateIgnoreRegex().ToList();
 
-			string ToRelative(string fullName) => fullName[(root.FullName.Length)..];
+			string ToRelative(string fullName) => fullName[root.FullName.Length..];
 
 			Snapshot snapshot = new();
 			Queue<DirectoryInfo> subDirs = new();

@@ -11,10 +11,10 @@ namespace VersionedCopy
 			var src = env.Options.SourceDirectory.IncludeTrailingPathDelimiter();
 			var dst = env.Options.DestinationDirectory.IncludeTrailingPathDelimiter();
 			Console.WriteLine($"Update from '{src}' to '{dst}'");
-			// Create a snapshot from destination
-			var taskDst = Task.Run(() => Snapshot.Create(dst, env.Options.IgnoreDirectories, env.Options.IgnoreFiles, env.Token));
+			// Try read snapshot from destination otherwise create
+			var taskDst = Task.Run(() => env.CreateSnapshot(dst));
 			// Create a snapshot from source
-			var taskSrc = Task.Run(() => Snapshot.Create(src, env.Options.IgnoreDirectories, env.Options.IgnoreFiles, env.Token));
+			var taskSrc = Task.Run(() => env.CreateSnapshot(src));
 			Task.WaitAll(taskSrc, taskDst);
 			var snapSrc = taskSrc.Result;
 			var snapDst = taskDst.Result;
@@ -26,6 +26,10 @@ namespace VersionedCopy
 			SyncOperations.FindUpdatedFiles(snapSrc, snapDst, out var srcUpdatedFiles, out var _);
 			// Copy updated files to other side, old version move to old folder, update snapshot
 			env.UpdateFiles(src, dst, srcUpdatedFiles);
+			if (!env.Options.ReadOnly)
+			{
+				//AlgorithmEnv.SaveSnapshot(snapDst, dst);
+			}
 		}
 	}
 }

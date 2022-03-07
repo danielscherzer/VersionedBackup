@@ -8,9 +8,6 @@ namespace VersionedCopy
 {
 	public class Sync
 	{
-		public const string FileNameSnapShot = ".versioned.copy.snapshot.json";
-		public const string FileNameDeleteHistory = ".versioned.copy.delete.history.json";
-
 		public static void Run(AlgorithmEnv env)
 		{
 			var src = env.Options.SourceDirectory.IncludeTrailingPathDelimiter();
@@ -19,11 +16,11 @@ namespace VersionedCopy
 
 			Stopwatch time = Stopwatch.StartNew();
 			// Try read snapshot from destination otherwise create
-			var taskDst = Task.Run(() => Persist.Load<Snapshot>(dst + FileNameSnapShot) ?? Snapshot.Create(dst, env.Options.IgnoreDirectories, env.Options.IgnoreFiles, env.Token));
+			var taskDst = Task.Run(() => AlgorithmEnv.LoadSnapshot(dst) ?? env.CreateSnapshot(dst));
 			// Create a snapshot from source
-			var taskSrc = Task.Run(() => Snapshot.Create(src, env.Options.IgnoreDirectories, env.Options.IgnoreFiles, env.Token));
+			var taskSrc = Task.Run(() => env.CreateSnapshot(src));
 			// try load old snapshort from source
-			var taskSrcOld = Task.Run(() => Persist.Load<Snapshot>(src + FileNameSnapShot));
+			var taskSrcOld = Task.Run(() => AlgorithmEnv.LoadSnapshot(src));
 			Task.WaitAll(taskSrc, taskDst);
 			var snapSrc = taskSrc.Result;
 			var snapDst = taskDst.Result;
@@ -80,9 +77,9 @@ namespace VersionedCopy
 				syncs.Save();
 				time.Benchmark("Sync save");
 				//save snapshots with changes
-				Persist.Save(snapSrc, src + FileNameSnapShot);
+				AlgorithmEnv.SaveSnapshot(snapSrc, src);
 				time.Benchmark("snapshot src save");
-				Persist.Save(snapSrc, dst + FileNameSnapShot);
+				AlgorithmEnv.SaveSnapshot(snapDst, dst);
 				time.Benchmark("snapshot dst save");
 			}
 		}
