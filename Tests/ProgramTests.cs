@@ -3,8 +3,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 using VersionedCopy.Interfaces;
+using VersionedCopy.Options;
 using VersionedCopy.PathHelper;
-using VersionedCopy.Services;
 
 namespace VersionedCopy.Tests
 {

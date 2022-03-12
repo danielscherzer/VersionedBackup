@@ -2,6 +2,7 @@ using CommandLine;
 using System;
 using System.Diagnostics;
 using System.Threading;
+using VersionedCopy.Options;
 using VersionedCopy.PathHelper;
 using VersionedCopy.Services;
 
@@ -19,7 +20,7 @@ namespace VersionedCopy
 			using CancellationTokenSource cts = new();
 			Console.CancelKeyPress += (_, args) =>
 			{
-				output.Error("CANCEL received - stopping opperations!");
+				output.Error("CANCEL received - stopping operations!");
 				cts.Cancel();
 				args.Cancel = true; // means to continue the process!, no hard cancel, but give process time to cleanup
 			};

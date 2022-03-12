@@ -9,25 +9,33 @@ namespace VersionedCopy.PathHelper
 {
 	public class Snapshot
 	{
+		public Snapshot(string root)
+		{
+			Root = root.IncludeTrailingPathDelimiter();
+		}
+
 		public void Add(string name, DateTime writeTime) => Entries.Add(name, writeTime);
 
-		public Dictionary<string, DateTime> Entries { get; } = new();
+		public SortedDictionary<string, DateTime> Entries { get; } = new();
+
+		public string FullName(string fileName) => Root + fileName;
+		
+		public string Root { get; private set; }
 
 		public static bool IsFile(string fileName) => !Path.EndsInDirectorySeparator(fileName);
 
-		public IEnumerable<KeyValuePair<string, DateTime>> Files() => Entries.Where(entry => IsFile(entry.Key));
+		public RelativeFileList Files() => new(Root, Entries.Where(entry => IsFile(entry.Key)));
 
 		public static Snapshot Create(string directory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, System.Threading.CancellationToken cancellationToken)
 		{
-			directory = directory.IncludeTrailingPathDelimiter();
-			var root = new DirectoryInfo(directory);
+			Snapshot snapshot = new(directory);
+			var root = new DirectoryInfo(snapshot.Root);
 			if (!root.Exists) throw new DirectoryNotFoundException(directory);
 			var regexIgnoreDirectories = ignoreDirectories.CreateIgnoreRegex().ToList();
 			var regexIgnoreFiles = ignoreFiles.CreateIgnoreRegex().ToList();
 
 			string ToRelative(string fullName) => fullName[root.FullName.Length..];
 
-			Snapshot snapshot = new();
 			Queue<DirectoryInfo> subDirs = new();
 			subDirs.Enqueue(root);
 			while (subDirs.Count > 0)
@@ -59,7 +67,7 @@ namespace VersionedCopy.PathHelper
 			return snapshot;
 		}
 
-		public IEnumerable<KeyValuePair<string, DateTime>> Singles(Snapshot other) => Entries.Where(dir => !other.Entries.ContainsKey(dir.Key));
+		public RelativeFileList Singles(Snapshot other) => new(Root, Entries.Where(dir => !other.Entries.ContainsKey(dir.Key)));
 
 		public static void Run(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, System.Threading.CancellationToken cancellationToken)
 		{

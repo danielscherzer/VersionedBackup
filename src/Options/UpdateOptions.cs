@@ -1,7 +1,7 @@
 ﻿using CommandLine;
 using System.Collections.Generic;
 
-namespace VersionedCopy.Services
+namespace VersionedCopy.Options
 {
 	[Verb("update", HelpText = "Update the destination directory form the soure directory.")]
 	public class UpdateOptions : Options

@@ -1,7 +1,7 @@
 ﻿using CommandLine;
 using System.Collections.Generic;
 
-namespace VersionedCopy.Services
+namespace VersionedCopy.Options
 {
 	[Verb("sync", HelpText = "Sync the soure directory and the destination directory bidirectionally.")]
 	public class SyncOptions : Options

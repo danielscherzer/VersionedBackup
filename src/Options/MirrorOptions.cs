@@ -1,7 +1,7 @@
 ﻿using CommandLine;
 using System.Collections.Generic;
 
-namespace VersionedCopy.Services
+namespace VersionedCopy.Options
 {
 	[Verb("mirror", HelpText = "Mirror the soure directory to the destination directory.")]
 	public class MirrorOptions : Options

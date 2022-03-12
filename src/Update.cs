@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using VersionedCopy.PathHelper;
+using VersionedCopy.Services;
 
 namespace VersionedCopy
 {
@@ -21,11 +22,11 @@ namespace VersionedCopy
 			// find singles in source
 			var srcSingles = snapSrc.Singles(snapDst);
 			//create missing files/directories in dst
-			env.Copy(src, dst, srcSingles);
+			env.Copy(srcSingles, snapDst);
 			// Find updated files/directories
 			SyncOperations.FindUpdatedFiles(snapSrc, snapDst, out var srcUpdatedFiles, out var _);
 			// Copy updated files to other side, old version move to old folder, update snapshot
-			env.UpdateFiles(src, dst, srcUpdatedFiles);
+			env.UpdateFiles(srcUpdatedFiles, snapDst);
 			if (!env.Options.ReadOnly)
 			{
 				//AlgorithmEnv.SaveSnapshot(snapDst, dst);

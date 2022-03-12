@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using VersionedCopy.PathHelper;
 
-namespace VersionedCopy.Services
+namespace VersionedCopy.Options
 {
 	[Verb("snapshot", HelpText = "Sync the soure directory and the destination directory bidirectionally.")]
 	public class SnapshotOptions

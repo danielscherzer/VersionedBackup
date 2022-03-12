@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using VersionedCopy.PathHelper;
+using VersionedCopy.Services;
 
 namespace VersionedCopy
 {
@@ -23,19 +25,21 @@ namespace VersionedCopy
 			var srcSingles = snapSrc.Singles(snapDst);
 			// find singles in destination
 			var dstSingles = snapDst.Singles(snapSrc);
-			env.MoveAway(dst, dstSingles, snapDst);
+			env.MoveAway(snapDst, dstSingles);
 			//create missing files/directories in dst
-			env.Copy(src, dst, srcSingles);
+			env.Copy(srcSingles, snapDst);
 			// Find updated files/directories
 			SyncOperations.FindUpdatedFiles(snapSrc, snapDst, out var srcUpdatedFiles, out var dstUpdatedFiles);
 			// Copy updated files to other side, old version move to old folder, update snapshot
-			env.UpdateFiles(src, dst, srcUpdatedFiles);
+			env.UpdateFiles(srcUpdatedFiles, snapDst);
 			// overwrite changed files in destination
-			env.UpdateFiles(src, dst, dstUpdatedFiles);
+			RelativeFileList oldSrcFiles = new(snapSrc.Root, dstUpdatedFiles.Items);
+			env.UpdateFiles(oldSrcFiles, snapDst);
 			if (!env.Options.ReadOnly)
 			{
-				AlgorithmEnv.SaveSnapshot(snapSrc, src); //after mirror source snapshot == destination snapshot, only if no errors and no cancel
-				AlgorithmEnv.SaveSnapshot(snapDst, dst); //after mirror source snapshot == destination snapshot, only if no errors and no cancel
+				//TODO: update snapshots
+				//AlgorithmEnv.SaveSnapshot(snapSrc, src); //after mirror source snapshot == destination snapshot, only if no errors and no cancel
+				//AlgorithmEnv.SaveSnapshot(snapDst, dst); //after mirror source snapshot == destination snapshot, only if no errors and no cancel
 				//AlgorithmEnv.SaveSnapshot(snapSrc, dst); //after mirror source snapshot == destination snapshot, only if no errors and no cancel
 			}
 		}

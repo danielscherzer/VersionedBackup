@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using VersionedCopy.Interfaces;
+using VersionedCopy.PathHelper;
 
 namespace VersionedCopy.Services
 {
@@ -19,6 +20,12 @@ namespace VersionedCopy.Services
 		{
 			if (ReadOnly) return true;
 			return Successful(() => Directory.CreateDirectory(path));
+		}
+
+		public bool CreateDirectory(string path, DateTime creationTimeUtc)
+		{
+			if (ReadOnly) return true;
+			return Successful(() => Directory.CreateDirectory(path).CreationTimeUtc = creationTimeUtc);
 		}
 
 		public bool Copy(string srcFilePath, string dstFilePath)
@@ -53,6 +60,22 @@ namespace VersionedCopy.Services
 				}
 				Directory.CreateDirectory(parentDir);
 				File.Move(source, destination);
+			});
+		}
+
+		public bool SetTimeStamp(string filePath, DateTime newTime)
+		{
+			if (ReadOnly) return true;
+			return Successful(() =>
+			{
+				if (Snapshot.IsFile(filePath))
+				{
+					File.SetLastWriteTimeUtc(filePath, newTime);
+				}
+				else
+				{
+					Directory.SetCreationTimeUtc(filePath, newTime);
+				}
 			});
 		}
 

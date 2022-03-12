@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using VersionedCopy.Services;
 
-namespace VersionedCopy
+namespace VersionedCopy.Services
 {
 	internal class SyncList
 	{
@@ -44,8 +43,8 @@ namespace VersionedCopy
 
 		public void Save()
 		{
-			Persist.Save(srcSyncs, src + FileNameSyncList);
-			Persist.Save(dstSyncs, dst + FileNameSyncList);
+			srcSyncs.Save(src + FileNameSyncList);
+			dstSyncs.Save(dst + FileNameSyncList);
 		}
 	}
 }

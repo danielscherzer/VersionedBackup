@@ -6,15 +6,15 @@ using System.Linq;
 using VersionedCopy.Interfaces;
 using VersionedCopy.PathHelper;
 
-namespace VersionedCopy.Services
+namespace VersionedCopy.Options
 {
 	public class Options : IOptions
 	{
 		public Options(string sourceDirectory, string destinationDirectory, string oldFilesFolder
 			, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, bool readOnly)
 		{
-			SourceDirectory = (sourceDirectory).IncludeTrailingPathDelimiter();
-			DestinationDirectory = (destinationDirectory).IncludeTrailingPathDelimiter();
+			SourceDirectory = sourceDirectory.IncludeTrailingPathDelimiter();
+			DestinationDirectory = destinationDirectory.IncludeTrailingPathDelimiter();
 			if (string.IsNullOrEmpty(oldFilesFolder))
 			{
 				OldFilesFolder = $"{DestinationDirectory[0..^1]}.old{Path.DirectorySeparatorChar}{DateTime.Now:yyyy-MM-dd_HHmmss}{Path.DirectorySeparatorChar}";

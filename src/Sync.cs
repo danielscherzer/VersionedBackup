@@ -37,7 +37,7 @@ namespace VersionedCopy
 					var newTime = file.Value.AddSeconds(5);
 					var fileName = file.Key;
 					snapSrc.Entries[fileName] = newTime;
-					env.SetTimeStamp(src + fileName, newTime);
+					env.SetTimeStamp(snapSrc.FullName(fileName), newTime);
 				}
 				// new with time stamp older last sync (e.x.: rename) -> set time current sync + 5 sec
 				var newCreated = snapSrc.Singles(snapOld);
@@ -45,10 +45,10 @@ namespace VersionedCopy
 				{
 					if (file.Value < syncs.LastSyncTime)
 					{
-						var fileName = file.Key;
 						var newTime = syncs.CurrentSyncTime.AddSeconds(5);
-						snapSrc.Entries[file.Key] = newTime;
-						env.SetTimeStamp(src + fileName, newTime);
+						var fileName = file.Key;
+						snapSrc.Entries[fileName] = newTime;
+						env.SetTimeStamp(snapSrc.FullName(fileName), newTime);
 					}
 				}
 			}
@@ -60,26 +60,29 @@ namespace VersionedCopy
 			time.Benchmark("Create lists");
 
 			// move away before copy because file with only capitalisation differences could exist after rename
-			env.MoveAway(src, srcToDelete, snapSrc);
-			env.MoveAway(dst, dstToDelete, snapDst);
+			env.MoveAway(snapSrc, srcToDelete);
+			env.MoveAway(snapDst, dstToDelete);
 
-			env.Copy(src, dst, srcNew, snapDst);
-			env.Copy(dst, src, dstNew, snapSrc);
+			env.Copy(srcNew, snapDst);
+			env.Copy(dstNew, snapSrc);
 
 			// Copy updated files to other side, old version move to old folder, update snapshot
-			env.UpdateFiles(src, dst, srcUpdatedFiles, snapDst); // TODO: Do on different thread
-			env.UpdateFiles(dst, src, dstUpdatedFiles, snapSrc);
+			env.UpdateFiles(srcUpdatedFiles, snapDst); // TODO: Do on different thread
+			env.UpdateFiles(dstUpdatedFiles, snapSrc);
 
 			time.Benchmark("Copy");
 
 			if (!env.Options.ReadOnly)
 			{
-				syncs.Save();
-				time.Benchmark("Sync save");
+				if (!env.Canceled)
+				{
+					syncs.Save();
+					time.Benchmark("Sync save");
+				}
 				//save snapshots with changes
-				AlgorithmEnv.SaveSnapshot(snapSrc, src);
+				AlgorithmEnv.SaveSnapshot(snapSrc);
 				time.Benchmark("snapshot src save");
-				AlgorithmEnv.SaveSnapshot(snapDst, dst);
+				AlgorithmEnv.SaveSnapshot(snapDst);
 				time.Benchmark("snapshot dst save");
 			}
 		}
