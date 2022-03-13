@@ -10,6 +10,7 @@ namespace VersionedCopy
 {
 	public static class Program
 	{
+		
 		public static void Main(string[] args)
 		{
 #if DEBUG
@@ -25,8 +26,7 @@ namespace VersionedCopy
 				args.Cancel = true; // means to continue the process!, no hard cancel, but give process time to cleanup
 			};
 
-			var parser = new Parser(with => { with.CaseSensitive = false; with.AutoHelp = true; with.HelpWriter = Console.Error; });
-			var result = parser.ParseArguments<MirrorOptions, UpdateOptions, SyncOptions, SnapshotOptions, AssemblyUpdateOptions>(args)
+			Parse(args)
 				.WithParsed<MirrorOptions>(options => Mirror.Run(new AlgorithmEnv(options, output, cts.Token)))
 				.WithParsed<UpdateOptions>(options => Update.Run(new AlgorithmEnv(options, output, cts.Token)))
 				.WithParsed<SyncOptions>(options => Sync.Run(new AlgorithmEnv(options, output, cts.Token)))
@@ -35,6 +35,13 @@ namespace VersionedCopy
 #if DEBUG
 			stopwatch.Benchmark("Total");
 #endif
+		}
+
+		public static ParserResult<object> Parse(string[] args)
+		{
+			var parser = new Parser(with => { with.CaseSensitive = false; with.AutoHelp = true; with.HelpWriter = Console.Error; });
+			var result = parser.ParseArguments<MirrorOptions, UpdateOptions, SyncOptions, SnapshotOptions, AssemblyUpdateOptions>(args);
+			return result;
 		}
 	}
 }
