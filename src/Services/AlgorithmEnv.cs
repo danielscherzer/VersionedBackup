@@ -17,6 +17,7 @@ namespace VersionedCopy.Services
 			Options = options;
 			Output = output;
 			FileOperations = new FileOperations(output, options.ReadOnly);
+			OldFilesFolder = $"{GetOldPath(options.DestinationDirectory)}{Path.DirectorySeparatorChar}{DateTime.Now:yyyy-MM-dd_HHmmss}{Path.DirectorySeparatorChar}";
 			Token = token;
 			output.Report("VersionedCopy");
 			if (options.ReadOnly) output.Report("Read only mode");
@@ -49,6 +50,8 @@ namespace VersionedCopy.Services
 				}
 			}
 		}
+
+		public static string GetOldPath(string path) => $"{path.IncludeTrailingPathDelimiter()[0..^1]}.old{Path.DirectorySeparatorChar}";
 
 		public const string FileNameSnapShot = ".versioned.copy.snapshot.json";
 
@@ -129,7 +132,7 @@ namespace VersionedCopy.Services
 				//move deleted to old
 				if (Snapshot.IsFile(fileName))
 				{
-					if (FileOperations.MoveFile(path, Options.OldFilesFolder + fileName)) //TODO: if different drives, move will not work
+					if (FileOperations.MoveFile(path, OldFilesFolder + fileName)) //TODO: if different drives, move will not work
 					{
 						snapshot.Entries.Remove(fileName);
 						Output.Report($"Backup deleted file '{path}'");
@@ -137,7 +140,7 @@ namespace VersionedCopy.Services
 				}
 				else
 				{
-					if (FileOperations.MoveDirectory(path, Options.OldFilesFolder + fileName))
+					if (FileOperations.MoveDirectory(path, OldFilesFolder + fileName))
 					{
 						snapshot.Entries.Remove(fileName);
 						Output.Report($"Backup deleted directory '{path}'");
@@ -180,7 +183,7 @@ namespace VersionedCopy.Services
 				if (Token.IsCancellationRequested) return;
 				var fileName = file.Key;
 				var dstPath = snapDst.FullName(fileName);
-				if (FileOperations.MoveFile(dstPath, Options.OldFilesFolder + fileName)) //move away old
+				if (FileOperations.MoveFile(dstPath, OldFilesFolder + fileName)) //move away old
 				{
 					if (FileOperations.Copy(updatedFiles.FullName(fileName), dstPath)) //copy new
 					{
@@ -196,5 +199,6 @@ namespace VersionedCopy.Services
 		private CancellationToken Token { get; }
 		private FileOperations FileOperations { get; }
 		private IOutput Output { get; }
+		public string OldFilesFolder { get; }
 	}
 }

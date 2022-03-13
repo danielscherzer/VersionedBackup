@@ -1,12 +1,25 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using VersionedCopy.Services;
 
 namespace VersionedCopy.Tests
 {
 	internal static class FileSystemHelper
 	{
 		private static readonly string Root = Path.Combine(Path.GetTempPath(), "VersionedCopy");
+
 		public static string ToPath(params string[] nameParts) => Path.Combine(Root, Path.Join(nameParts));
+		
+		public static string GetBackupPath(string path)
+		{
+			var old = AlgorithmEnv.GetOldPath(path);
+			DirectoryInfo dir = new DirectoryInfo(old);
+			var subDir = dir.EnumerateDirectories().First();
+			return subDir.FullName + Path.DirectorySeparatorChar;
+		}
+
 		public static void Cleanup()
 		{
 			if (Directory.Exists(Root)) Directory.Delete(Root, true);

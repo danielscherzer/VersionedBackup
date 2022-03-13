@@ -8,7 +8,6 @@ namespace VersionedCopy.Interfaces
 		IEnumerable<string> IgnoreFiles { get; }
 		bool ReadOnly { get; }
 		string DestinationDirectory { get; }
-		string OldFilesFolder { get; }
 		string SourceDirectory { get; }
 	}
 }
