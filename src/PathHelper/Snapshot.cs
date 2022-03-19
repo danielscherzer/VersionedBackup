@@ -14,7 +14,11 @@ namespace VersionedCopy.PathHelper
 			Root = root.IncludeTrailingPathDelimiter();
 		}
 
-		public void Add(string name, DateTime writeTime) => Entries.Add(name, writeTime);
+		public void Add(string name, DateTime writeTime)
+		{
+			//Entries.Add(name, Round(writeTime, TimeSpan.FromSeconds(5.0)));
+			Entries.Add(name, writeTime);
+		}
 
 		public SortedDictionary<string, DateTime> Entries { get; } = new();
 
@@ -75,6 +79,12 @@ namespace VersionedCopy.PathHelper
 			var state = Create(directory, ignoreDirectories, ignoreFiles, cancellationToken);
 			string json = JsonConvert.SerializeObject(state, Formatting.Indented);
 			File.WriteAllText(databaseFileName, json);
+		}
+
+		private static DateTime Round(DateTime dateTime, TimeSpan interval)
+		{
+			var halfIntervalTicks = (interval.Ticks + 1) >> 1;
+			return dateTime.AddTicks(halfIntervalTicks - ((dateTime.Ticks + halfIntervalTicks) % interval.Ticks));
 		}
 	}
 }

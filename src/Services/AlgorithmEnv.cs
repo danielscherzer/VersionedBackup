@@ -124,10 +124,17 @@ namespace VersionedCopy.Services
 		internal void MoveAway(Snapshot snapshot, IEnumerable<Entry> toDelete)
 		{
 			var list = toDelete is IList<Entry> ? toDelete : toDelete.ToList();
+			List<string> alreadyMovedDirs = new();
 			foreach (var file in list)
 			{
 				if (Token.IsCancellationRequested) return;
 				var fileName = file.Key;
+				// do not need to move directory/file where parent dir has been moved
+				if (alreadyMovedDirs.Any(entry => fileName.Contains(entry)))
+				{
+					snapshot.Entries.Remove(fileName);
+					continue;
+				}
 				var path = snapshot.FullName(fileName);
 				//move deleted to old
 				if (Snapshot.IsFile(fileName))
@@ -143,6 +150,7 @@ namespace VersionedCopy.Services
 					if (FileOperations.MoveDirectory(path, OldFilesFolder + fileName))
 					{
 						snapshot.Entries.Remove(fileName);
+						alreadyMovedDirs.Add(fileName);
 						Output.Report($"Backup deleted directory '{path}'");
 					}
 				}
