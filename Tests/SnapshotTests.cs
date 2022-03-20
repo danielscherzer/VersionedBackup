@@ -27,13 +27,13 @@ namespace VersionedCopy.Tests
 		}
 
 		[DataTestMethod()]
-		[DataRow(@"c:", @"c:\.old\")]
-		[DataRow(@"c:\", @"c:\.old\")]
-		[DataRow(@"c:\daten", @"c:\daten.old\")]
-		public void GetOldPathTest(string path, string old)
+		[DataRow("c:", "c:\\" + Snapshot.CommonFileNamePart + "\\")]
+		[DataRow("c:\\", "c:\\" + Snapshot.CommonFileNamePart + "\\")]
+		[DataRow("c:\\daten", "c:\\daten" + Snapshot.CommonFileNamePart + "\\")]
+		public void GetOldPathTest(string root, string metaDir)
 		{
-			var result = Snapshot.GetOldPath(path);
-			Assert.AreEqual(old, result);
+			var result = Snapshot.GetMetaDataDir(root);
+			Assert.AreEqual(metaDir, result);
 		}
 
 		[TestMethod()]

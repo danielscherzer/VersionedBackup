@@ -16,11 +16,11 @@ namespace VersionedCopy
 
 			Stopwatch time = Stopwatch.StartNew();
 			// Try read snapshot from destination otherwise create
-			var taskDst = Task.Run(() => AlgorithmEnv.LoadSnapshot(dst) ?? env.CreateSnapshot(dst));
+			var taskDst = Task.Run(() => Snapshot.Load(dst) ?? env.CreateSnapshot(dst));
 			// Create a snapshot from source
 			var taskSrc = Task.Run(() => env.CreateSnapshot(src));
 			// try load old snapshort from source
-			var taskSrcOld = Task.Run(() => AlgorithmEnv.LoadSnapshot(src));
+			var taskSrcOld = Task.Run(() => Snapshot.Load(src));
 			Task.WaitAll(taskSrc, taskDst);
 			var snapSrc = taskSrc.Result;
 			var snapDst = taskDst.Result;
@@ -58,7 +58,8 @@ namespace VersionedCopy
 			SyncOperations.FindNewAndToDelete(snapSrc, snapDst, syncs.LastSyncTime, out var srcNew, out var srcToDelete);
 			SyncOperations.FindNewAndToDelete(snapDst, snapSrc, syncs.LastSyncTime, out var dstNew, out var dstToDelete);
 			time.Benchmark("Create lists");
-
+			var debugString = $"srcUpd({srcUpdatedFiles}), dstUpd({dstUpdatedFiles}), " +
+				$"srcNew({srcNew}), dstNew({dstNew}), srcDel({srcToDelete}), dstDel({dstToDelete})";
 			// move away before copy because file with only capitalisation differences could exist after rename
 			env.MoveAway(snapSrc, srcToDelete);
 			env.MoveAway(snapDst, dstToDelete);
@@ -80,9 +81,9 @@ namespace VersionedCopy
 					time.Benchmark("Sync save");
 				}
 				//save snapshots with changes
-				AlgorithmEnv.SaveSnapshot(snapSrc);
+				snapSrc.Save();
 				time.Benchmark("snapshot src save");
-				AlgorithmEnv.SaveSnapshot(snapDst);
+				snapDst.Save();
 				time.Benchmark("snapshot dst save");
 			}
 		}

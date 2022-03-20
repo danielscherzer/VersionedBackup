@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using VersionedCopy.PathHelper;
 
 namespace VersionedCopy.Services
 {
 	internal class SyncList
 	{
-		public const string FileNameSyncList = ".versioned.copy.sync.list.json";
+		public const string FileNameSyncList = Snapshot.CommonFileNamePart + ".sync.list.json";
 		private readonly Dictionary<Guid, DateTime> srcSyncs;
 		private readonly Dictionary<Guid, DateTime> dstSyncs;
 		private readonly string src;
@@ -14,8 +15,10 @@ namespace VersionedCopy.Services
 
 		public SyncList(string src, string dst)
 		{
-			srcSyncs = Persist.Load<Dictionary<Guid, DateTime>>(src + FileNameSyncList) ?? new();
-			dstSyncs = Persist.Load<Dictionary<Guid, DateTime>>(dst + FileNameSyncList) ?? new();
+			this.src = Snapshot.GetMetaDataDir(src) + FileNameSyncList;
+			this.dst = Snapshot.GetMetaDataDir(dst) + FileNameSyncList;
+			srcSyncs = Persist.Load<Dictionary<Guid, DateTime>>(this.src) ?? new();
+			dstSyncs = Persist.Load<Dictionary<Guid, DateTime>>(this.dst) ?? new();
 			var matchingSyncs = srcSyncs.Keys.ToHashSet();
 			matchingSyncs.IntersectWith(dstSyncs.Keys);
 			if (matchingSyncs.Any())
@@ -33,9 +36,6 @@ namespace VersionedCopy.Services
 			CurrentSyncTime = DateTime.UtcNow;
 			dstSyncs[guid] = CurrentSyncTime;
 			srcSyncs[guid] = CurrentSyncTime;
-
-			this.src = src;
-			this.dst = dst;
 		}
 
 		public DateTime CurrentSyncTime { get; }
@@ -43,8 +43,8 @@ namespace VersionedCopy.Services
 
 		public void Save()
 		{
-			srcSyncs.Save(src + FileNameSyncList);
-			dstSyncs.Save(dst + FileNameSyncList);
+			srcSyncs.Save(src);
+			dstSyncs.Save(dst);
 		}
 	}
 }

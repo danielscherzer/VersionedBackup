@@ -14,7 +14,7 @@ namespace VersionedCopy
 			Console.WriteLine($"Mirror from '{src}' to '{dst}'");
 			// Create a snapshot from destination
 			// Try read snapshot from destination otherwise create
-			var taskDst = Task.Run(() => AlgorithmEnv.LoadSnapshot(dst) ?? env.CreateSnapshot(dst));
+			var taskDst = Task.Run(() => Snapshot.Load(dst) ?? env.CreateSnapshot(dst));
 			// Create a snapshot from source
 			var taskSrc = Task.Run(() => env.CreateSnapshot(src));
 			Task.WaitAll(taskSrc, taskDst);

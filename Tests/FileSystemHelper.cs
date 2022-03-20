@@ -13,17 +13,16 @@ namespace VersionedCopy.Tests
 		
 		public static string GetBackupPath(string path)
 		{
-			var old = Snapshot.GetOldPath(path);
-			DirectoryInfo dir = new(old);
-			var subDir = dir.EnumerateDirectories().Last();
-			return subDir.FullName + Path.DirectorySeparatorChar;
+			var metadDir = Snapshot.GetMetaDataDir(path);
+			DirectoryInfo dir = new(metadDir);
+			var subDir = dir.EnumerateDirectories().LastOrDefault();
+			return subDir is null ? string.Empty : subDir.FullName + Path.DirectorySeparatorChar;
 		}
 
 		public static void Cleanup()
 		{
 			if (Directory.Exists(Root)) Directory.Delete(Root, true);
 		}
-
 
 		public static string Create(string path1, string path2)
 		{

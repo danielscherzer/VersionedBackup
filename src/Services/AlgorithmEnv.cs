@@ -50,9 +50,6 @@ namespace VersionedCopy.Services
 			}
 		}
 
-		public const string FileNameSnapShot = ".versioned.copy.snapshot.json";
-
-
 		//TODO: multithreaded does not work well with stick internal void Copy(string src, string dst, IEnumerable<Entry> srcNew)
 		//{
 		//	try
@@ -106,13 +103,6 @@ namespace VersionedCopy.Services
 			}
 		}
 
-		internal static Snapshot? LoadSnapshot(string root)
-		{
-			return Persist.Load<Snapshot>(Path.Combine(root, FileNameSnapShot));
-		}
-
-		internal static void SaveSnapshot(Snapshot snap) => snap.Save(snap.FullName(FileNameSnapShot));
-
 		internal Snapshot CreateSnapshot(string root)
 		{
 			return Snapshot.Create(root, Options.IgnoreDirectories, Options.IgnoreFiles, Token);
@@ -136,7 +126,7 @@ namespace VersionedCopy.Services
 				//move deleted to old
 				if (Snapshot.IsFile(fileName))
 				{
-					if (FileOperations.MoveFile(path, snapshot.OldFilesFolder + fileName))
+					if (FileOperations.MoveFile(path, snapshot.BackupDir + fileName))
 					{
 						snapshot.Entries.Remove(fileName);
 						Output.Report($"Backup deleted file '{path}'");
@@ -144,7 +134,7 @@ namespace VersionedCopy.Services
 				}
 				else
 				{
-					if (FileOperations.MoveDirectory(path, snapshot.OldFilesFolder + fileName))
+					if (FileOperations.MoveDirectory(path, snapshot.BackupDir + fileName))
 					{
 						snapshot.Entries.Remove(fileName);
 						alreadyMovedDirs.Add(fileName);
@@ -188,7 +178,7 @@ namespace VersionedCopy.Services
 				if (Token.IsCancellationRequested) return;
 				var fileName = file.Key;
 				var dstPath = snapDst.FullName(fileName);
-				if (FileOperations.MoveFile(dstPath, snapDst.OldFilesFolder + fileName)) //move away old
+				if (FileOperations.MoveFile(dstPath, snapDst.BackupDir + fileName)) //move away old
 				{
 					if (FileOperations.Copy(updatedFiles.FullName(fileName), dstPath)) //copy new
 					{

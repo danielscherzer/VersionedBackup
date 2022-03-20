@@ -28,7 +28,8 @@ namespace VersionedCopy.Tests
 
 			// nothing to do -> no old dir
 			Program.Main(new string[] { "sync", src, dst });
-			Assert.ThrowsException<DirectoryNotFoundException>(() => GetBackupPath(dst));
+			var backupDir = GetBackupPath(dst);
+			Assert.AreEqual(string.Empty, backupDir);
 		}
 
 		[TestCleanup]

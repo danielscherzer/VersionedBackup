@@ -9,6 +9,7 @@ namespace VersionedCopy.Services
 		{
 			//var json = JsonSerializer.Serialize(obj);
 			var json = JsonConvert.SerializeObject(obj, Formatting.Indented);
+			Directory.CreateDirectory(Path.GetDirectoryName(fileName) ?? fileName);
 			File.WriteAllText(fileName, json);
 		}
 

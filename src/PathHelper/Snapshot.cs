@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using VersionedCopy.Interfaces;
+using VersionedCopy.Services;
 
 namespace VersionedCopy.PathHelper
 {
@@ -13,14 +13,17 @@ namespace VersionedCopy.PathHelper
 		public Snapshot(string root)
 		{
 			Root = Path.GetFullPath(root).IncludeTrailingPathDelimiter();
-			OldFilesFolder = $"{GetOldPath(Root)}{Path.DirectorySeparatorChar}{DateTime.Now:yyyy-MM-dd_HHmmss}{Path.DirectorySeparatorChar}";
+			BackupDir = $"{GetMetaDataDir(Root)}{Path.DirectorySeparatorChar}{DateTime.Now:yyyy-MM-dd_HHmmss}{Path.DirectorySeparatorChar}";
 		}
 
-		public static string GetOldPath(string path)
+		public const string CommonFileNamePart = ".versioned.copy";
+		public const string FileNameSnapShot = CommonFileNamePart + ".snapshot.json";
+
+		public static string GetMetaDataDir(string path)
 		{
 			path = path.IncludeTrailingPathDelimiter();
 			path = Directory.GetParent(path) is null ? path : path[0..^1];
-			return $"{path}.old{Path.DirectorySeparatorChar}";
+			return $"{path}{CommonFileNamePart}{Path.DirectorySeparatorChar}";
 		}
 
 		public void Add(string name, DateTime writeTime)
@@ -34,7 +37,8 @@ namespace VersionedCopy.PathHelper
 		public string FullName(string fileName) => Root + fileName;
 		
 		public string Root { get; private set; }
-		public string OldFilesFolder { get; }
+		
+		public string BackupDir { get; }
 
 		public static bool IsFile(string fileName) => !Path.EndsInDirectorySeparator(fileName);
 
@@ -82,6 +86,13 @@ namespace VersionedCopy.PathHelper
 		}
 
 		public RelativeFileList Singles(Snapshot other) => new(Root, Entries.Where(dir => !other.Entries.ContainsKey(dir.Key)));
+
+		internal static Snapshot? Load(string dir)
+		{
+			return Persist.Load<Snapshot>(Path.Combine(GetMetaDataDir(dir), FileNameSnapShot));
+		}
+
+		internal void Save() => this.Save(GetMetaDataDir(Root) + FileNameSnapShot);
 
 		public static void Run(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, System.Threading.CancellationToken cancellationToken)
 		{
