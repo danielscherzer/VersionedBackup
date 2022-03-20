@@ -26,6 +26,16 @@ namespace VersionedCopy.Tests
 			//}
 		}
 
+		[DataTestMethod()]
+		[DataRow(@"c:", @"c:\.old\")]
+		[DataRow(@"c:\", @"c:\.old\")]
+		[DataRow(@"c:\daten", @"c:\daten.old\")]
+		public void GetOldPathTest(string path, string old)
+		{
+			var result = Snapshot.GetOldPath(path);
+			Assert.AreEqual(old, result);
+		}
+
 		[TestMethod()]
 		public void SaveTest()
 		{

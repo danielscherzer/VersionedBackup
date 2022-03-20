@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.IO;
 using static VersionedCopy.Tests.FileSystemHelper;
 
 namespace VersionedCopy.Tests
@@ -24,6 +25,10 @@ namespace VersionedCopy.Tests
 
 			foreach (var item in listSrc) Assert.IsTrue(Exists(dst, item));
 			foreach (var item in listDst) Assert.IsTrue(Exists(src, item));
+
+			// nothing to do -> no old dir
+			Program.Main(new string[] { "sync", src, dst });
+			Assert.ThrowsException<DirectoryNotFoundException>(() => GetBackupPath(dst));
 		}
 
 		[TestCleanup]

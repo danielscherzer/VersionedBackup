@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using VersionedCopy.Interfaces;
 
 namespace VersionedCopy.PathHelper
 {
@@ -11,12 +12,20 @@ namespace VersionedCopy.PathHelper
 	{
 		public Snapshot(string root)
 		{
-			Root = root.IncludeTrailingPathDelimiter();
+			Root = Path.GetFullPath(root).IncludeTrailingPathDelimiter();
+			OldFilesFolder = $"{GetOldPath(Root)}{Path.DirectorySeparatorChar}{DateTime.Now:yyyy-MM-dd_HHmmss}{Path.DirectorySeparatorChar}";
+		}
+
+		public static string GetOldPath(string path)
+		{
+			path = path.IncludeTrailingPathDelimiter();
+			path = Directory.GetParent(path) is null ? path : path[0..^1];
+			return $"{path}.old{Path.DirectorySeparatorChar}";
 		}
 
 		public void Add(string name, DateTime writeTime)
 		{
-			//Entries.Add(name, Round(writeTime, TimeSpan.FromSeconds(5.0)));
+			//TODO: Entries.Add(name, Round(writeTime, TimeSpan.FromSeconds(5.0)));
 			Entries.Add(name, writeTime);
 		}
 
@@ -25,6 +34,7 @@ namespace VersionedCopy.PathHelper
 		public string FullName(string fileName) => Root + fileName;
 		
 		public string Root { get; private set; }
+		public string OldFilesFolder { get; }
 
 		public static bool IsFile(string fileName) => !Path.EndsInDirectorySeparator(fileName);
 

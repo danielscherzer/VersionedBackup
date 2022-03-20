@@ -7,13 +7,13 @@ namespace VersionedCopy.Services
 {
 	internal class FileOperations
 	{
-		public FileOperations(IOutput errorOutput, bool readOnly)
+		public FileOperations(IOutput output, bool readOnly)
 		{
-			ErrorOutput = errorOutput ?? throw new ArgumentNullException(nameof(errorOutput));
+			Output = output ?? throw new ArgumentNullException(nameof(output));
 			ReadOnly = readOnly;
 		}
 
-		private IOutput ErrorOutput { get; }
+		private IOutput Output { get; }
 		private bool ReadOnly { get; }
 
 		public bool CreateDirectory(string path)
@@ -55,7 +55,7 @@ namespace VersionedCopy.Services
 				var parentDir = Path.GetDirectoryName(destination);
 				if (parentDir is null)
 				{
-					ErrorOutput.Error($"File '{destination}' has no parent directory.");
+					Output.Error($"File '{destination}' has no parent directory.");
 					return;
 				}
 				Directory.CreateDirectory(parentDir);
@@ -88,7 +88,7 @@ namespace VersionedCopy.Services
 			}
 			catch (IOException e)
 			{
-				ErrorOutput.Error(e.Message);
+				Output.Error(e.Message);
 				return false;
 			}
 		}

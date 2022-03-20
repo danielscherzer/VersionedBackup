@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using VersionedCopy.Services;
+using VersionedCopy.PathHelper;
 
 namespace VersionedCopy.Tests
 {
@@ -14,9 +13,9 @@ namespace VersionedCopy.Tests
 		
 		public static string GetBackupPath(string path)
 		{
-			var old = AlgorithmEnv.GetOldPath(path);
-			DirectoryInfo dir = new DirectoryInfo(old);
-			var subDir = dir.EnumerateDirectories().First();
+			var old = Snapshot.GetOldPath(path);
+			DirectoryInfo dir = new(old);
+			var subDir = dir.EnumerateDirectories().Last();
 			return subDir.FullName + Path.DirectorySeparatorChar;
 		}
 
