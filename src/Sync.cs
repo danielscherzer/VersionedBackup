@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using VersionedCopy.PathHelper;
 using VersionedCopy.Services;
@@ -40,7 +41,7 @@ namespace VersionedCopy
 					env.SetTimeStamp(snapSrc.FullName(fileName), newTime);
 				}
 				// new with time stamp older last sync (e.x.: rename) -> set time current sync + 5 sec
-				var newCreated = snapSrc.Singles(snapOld);
+				var newCreated = snapSrc.Singles(snapOld).ToList();
 				foreach (var file in newCreated)
 				{
 					if (file.Value < syncs.LastSyncTime)
