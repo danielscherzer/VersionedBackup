@@ -8,10 +8,10 @@ namespace VersionedCopy.Options
 	[Verb("snapshot", HelpText = "Sync the soure directory and the destination directory bidirectionally.")]
 	public class SnapshotOptions
 	{
-		public SnapshotOptions(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
+		public SnapshotOptions(string directory, string fileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles)
 		{
 			Directory = directory.IncludeTrailingPathDelimiter();
-			DatabaseFileName = databaseFileName;
+			FileName = fileName;
 			IgnoreDirectories = ignoreDirectories;
 			IgnoreFiles = ignoreFiles;
 		}
@@ -20,7 +20,7 @@ namespace VersionedCopy.Options
 		public string Directory { get; } = "";
 
 		[Value(1, Required = true, HelpText = "The file to store the directory tree information.")]
-		public string DatabaseFileName { get; } = "";
+		public string FileName { get; } = "";
 
 		[Option(longName: "ignoreDirectories", Required = false, HelpText = "A list of ignored directories.")]
 		public IEnumerable<string> IgnoreDirectories { get; } = Enumerable.Empty<string>();

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using VersionedCopy.Interfaces;
 using VersionedCopy.Services;
 
 namespace VersionedCopy.PathHelper
@@ -42,7 +43,7 @@ namespace VersionedCopy.PathHelper
 
 		public static bool IsFile(string fileName) => !Path.EndsInDirectorySeparator(fileName);
 
-		public RelativeFileList Files() => new(Root, Entries.Where(entry => IsFile(entry.Key)));
+		public IRelativeFiles Files() => new RelativeFileList(Root, Entries.Where(entry => IsFile(entry.Key)));
 
 		public static Snapshot Create(string directory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, System.Threading.CancellationToken cancellationToken)
 		{

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using VersionedCopy.PathHelper;
 
-namespace VersionedCopy.Services
+namespace VersionedCopy.PathHelper
 {
 	using Entry = KeyValuePair<string, DateTime>;
 
-	public static class SyncOperations
+	public static class SnapshotExtensions
 	{
-		public static void FindNewAndToDelete(Snapshot mine, Snapshot other, DateTime lastSync, out RelativeFileList newEntries, out RelativeFileList toDeleteEntries)
+		public static void FindNewAndToDelete(this Snapshot mine, Snapshot other, DateTime lastSync, out RelativeFileList newEntries, out RelativeFileList toDeleteEntries)
 		{
 			List<Entry> newEntriesList = new();
 			List<Entry> toDeleteEntriesList = new();
@@ -27,7 +26,7 @@ namespace VersionedCopy.Services
 			toDeleteEntries = new(other.Root, toDeleteEntriesList);
 		}
 
-		public static void FindUpdatedFiles(Snapshot mine, Snapshot other, out RelativeFileList mineUpdatedFiles, out RelativeFileList otherUpdatedFiles)
+		public static void FindUpdatedFiles(this Snapshot mine, Snapshot other, out RelativeFileList mineUpdatedFiles, out RelativeFileList otherUpdatedFiles)
 		{
 			List<Entry> mineUpdatedFileList = new();
 			List<Entry> otherUpdatedFileList = new();

@@ -30,7 +30,7 @@ namespace VersionedCopy
 				.WithParsed<MirrorOptions>(options => Mirror.Run(new AlgorithmEnv(options, output, cts.Token)))
 				.WithParsed<UpdateOptions>(options => Update.Run(new AlgorithmEnv(options, output, cts.Token)))
 				.WithParsed<SyncOptions>(options => Sync.Run(new AlgorithmEnv(options, output, cts.Token)))
-				.WithParsed<SnapshotOptions>(options => Snapshot.Run(options.Directory, options.DatabaseFileName, options.IgnoreDirectories, options.IgnoreFiles, cts.Token))
+				.WithParsed<SnapshotOptions>(options => Snapshot.Run(options.Directory, options.FileName, options.IgnoreDirectories, options.IgnoreFiles, cts.Token))
 				.WithParsed<AssemblyUpdateOptions>(options => AssemblyUpdate.Update());
 #if DEBUG
 			stopwatch.Benchmark("Total");

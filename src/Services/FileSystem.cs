@@ -5,9 +5,9 @@ using VersionedCopy.PathHelper;
 
 namespace VersionedCopy.Services
 {
-	internal class FileOperations
+	public class FileSystem
 	{
-		public FileOperations(IOutput output, bool readOnly)
+		public FileSystem(IOutput output, bool readOnly)
 		{
 			Output = output ?? throw new ArgumentNullException(nameof(output));
 			ReadOnly = readOnly;

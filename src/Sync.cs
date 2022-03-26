@@ -32,7 +32,7 @@ namespace VersionedCopy
 			{
 				// history present: 2 cases problematic:
 				// changed were older has newer time stamp (e.x.: resurrected file) -> set time stamp old + 5 sec
-				SyncOperations.FindUpdatedFiles(snapSrc, snapOld, out var _, out var oldUpdatedFiles);
+				snapSrc.FindUpdatedFiles(snapOld, out var _, out var oldUpdatedFiles);
 				foreach (var file in oldUpdatedFiles)
 				{
 					var newTime = file.Value.AddSeconds(5);
@@ -55,9 +55,9 @@ namespace VersionedCopy
 			}
 
 			// Find updated files/directories
-			SyncOperations.FindUpdatedFiles(snapSrc, snapDst, out var srcUpdatedFiles, out var dstUpdatedFiles);
-			SyncOperations.FindNewAndToDelete(snapSrc, snapDst, syncs.LastSyncTime, out var srcNew, out var srcToDelete);
-			SyncOperations.FindNewAndToDelete(snapDst, snapSrc, syncs.LastSyncTime, out var dstNew, out var dstToDelete);
+			snapSrc.FindUpdatedFiles(snapDst, out var srcUpdatedFiles, out var dstUpdatedFiles);
+			snapSrc.FindNewAndToDelete(snapDst, syncs.LastSyncTime, out var srcNew, out var srcToDelete);
+			snapDst.FindNewAndToDelete(snapSrc, syncs.LastSyncTime, out var dstNew, out var dstToDelete);
 			time.Benchmark("Create lists");
 			var debugString = $"srcUpd({srcUpdatedFiles}), dstUpd({dstUpdatedFiles}), " +
 				$"srcNew({srcNew}), dstNew({dstNew}), srcDel({srcToDelete}), dstDel({dstToDelete})";

@@ -28,7 +28,7 @@ namespace VersionedCopy
 			//create missing files/directories in dst
 			env.Copy(srcSingles, snapDst);
 			// Find updated files/directories
-			SyncOperations.FindUpdatedFiles(snapSrc, snapDst, out var srcUpdatedFiles, out var dstUpdatedFiles);
+			snapSrc.FindUpdatedFiles(snapDst, out var srcUpdatedFiles, out var dstUpdatedFiles);
 			// Copy updated files to other side, old version move to old folder, update snapshot
 			env.UpdateFiles(srcUpdatedFiles, snapDst);
 			// overwrite changed files in destination

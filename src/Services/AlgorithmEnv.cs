@@ -16,7 +16,7 @@ namespace VersionedCopy.Services
 		{
 			Options = options;
 			Output = output;
-			FileOperations = new FileOperations(output, options.ReadOnly);
+			FileSystem = new FileSystem(output, options.ReadOnly);
 			Token = token;
 			output.Report("VersionedCopy");
 			if (options.ReadOnly) output.Report("Read only mode");
@@ -42,7 +42,7 @@ namespace VersionedCopy.Services
 				}
 				else
 				{
-					if (FileOperations.CreateDirectory(options.DestinationDirectory))
+					if (FileSystem.CreateDirectory(options.DestinationDirectory))
 					{
 						output.Report($"Create directory '{options.DestinationDirectory}'");
 					}
@@ -85,7 +85,7 @@ namespace VersionedCopy.Services
 			{
 				var fileName = file.Key;
 				if (Token.IsCancellationRequested) return;
-				if (FileOperations.CreateDirectory(snapDst.FullName(fileName), file.Value))
+				if (FileSystem.CreateDirectory(snapDst.FullName(fileName), file.Value))
 				{
 					snapDst.Entries[fileName] = file.Value;
 					Output.Report($"Create directory '{snapDst.FullName(fileName)}'");
@@ -95,7 +95,7 @@ namespace VersionedCopy.Services
 			{
 				var fileName = file.Key;
 				if (Token.IsCancellationRequested) return;
-				if (FileOperations.Copy(toCopy.FullName(fileName), snapDst.FullName(fileName)))
+				if (FileSystem.Copy(toCopy.FullName(fileName), snapDst.FullName(fileName)))
 				{
 					snapDst.Entries[fileName] = file.Value;
 					Output.Report($"New file '{snapDst.FullName(fileName)}'");
@@ -126,7 +126,7 @@ namespace VersionedCopy.Services
 				//move deleted to old
 				if (Snapshot.IsFile(fileName))
 				{
-					if (FileOperations.MoveFile(path, snapshot.BackupDir + fileName))
+					if (FileSystem.MoveFile(path, snapshot.BackupDir + fileName))
 					{
 						snapshot.Entries.Remove(fileName);
 						Output.Report($"Backup deleted file '{path}'");
@@ -134,7 +134,7 @@ namespace VersionedCopy.Services
 				}
 				else
 				{
-					if (FileOperations.MoveDirectory(path, snapshot.BackupDir + fileName))
+					if (FileSystem.MoveDirectory(path, snapshot.BackupDir + fileName))
 					{
 						snapshot.Entries.Remove(fileName);
 						alreadyMovedDirs.Add(fileName);
@@ -147,7 +147,7 @@ namespace VersionedCopy.Services
 		internal void SetTimeStamp(string fileName, DateTime newTime)
 		{
 			Output.Report($"New time stamp '{fileName}'");
-			FileOperations.SetTimeStamp(fileName, newTime);
+			FileSystem.SetTimeStamp(fileName, newTime);
 		}
 
 		//TODO: multithreaded does not work well with stick internal void UpdateFiles(string src, string dst, IEnumerable<Entry> updatedFiles)
@@ -178,9 +178,9 @@ namespace VersionedCopy.Services
 				if (Token.IsCancellationRequested) return;
 				var fileName = file.Key;
 				var dstPath = snapDst.FullName(fileName);
-				if (FileOperations.MoveFile(dstPath, snapDst.BackupDir + fileName)) //move away old
+				if (FileSystem.MoveFile(dstPath, snapDst.BackupDir + fileName)) //move away old
 				{
-					if (FileOperations.Copy(updatedFiles.FullName(fileName), dstPath)) //copy new
+					if (FileSystem.Copy(updatedFiles.FullName(fileName), dstPath)) //copy new
 					{
 						snapDst.Entries[fileName] = file.Value;
 						Output.Report($"Update file '{dstPath}'");
@@ -192,7 +192,7 @@ namespace VersionedCopy.Services
 		public bool Canceled => Token.IsCancellationRequested;
 		public IOptions Options { get; }
 		private CancellationToken Token { get; }
-		private FileOperations FileOperations { get; }
-		private IOutput Output { get; }
+		public FileSystem FileSystem { get; }
+		public IOutput Output { get; }
 	}
 }
