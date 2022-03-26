@@ -70,11 +70,19 @@ namespace VersionedCopy.Services
 			{
 				if (Snapshot.IsFile(filePath))
 				{
-					File.SetLastWriteTimeUtc(filePath, newTime);
+					var file = new FileInfo(filePath);
+					var wasReadOnly = file.IsReadOnly;
+					if(wasReadOnly) file.IsReadOnly = false;
+					file.LastWriteTimeUtc = newTime;
+					if(wasReadOnly) file.IsReadOnly = true;
 				}
 				else
 				{
-					Directory.SetCreationTimeUtc(filePath, newTime);
+					var dir = new DirectoryInfo(filePath);
+					var wasReadOnly = 0 != (dir.Attributes & FileAttributes.ReadOnly);
+					if (wasReadOnly) dir.Attributes &= ~FileAttributes.ReadOnly;
+					dir.CreationTimeUtc = newTime;
+					if(wasReadOnly) dir.Attributes |= FileAttributes.ReadOnly;
 				}
 			});
 		}
