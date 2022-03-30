@@ -76,16 +76,16 @@ namespace VersionedCopy
 
 			if (!env.Options.ReadOnly)
 			{
+				//save snapshots with changes
+				snapDst.Save();
+				time.Benchmark("snapshot dst save");
+				snapSrc.Save();
+				time.Benchmark("snapshot src save");
 				if (!env.Canceled)
 				{
 					syncs.Save();
 					time.Benchmark("Sync save");
 				}
-				//save snapshots with changes
-				snapSrc.Save();
-				time.Benchmark("snapshot src save");
-				snapDst.Save();
-				time.Benchmark("snapshot dst save");
 			}
 		}
 	}

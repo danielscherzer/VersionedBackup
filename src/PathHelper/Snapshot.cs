@@ -93,7 +93,14 @@ namespace VersionedCopy.PathHelper
 			return Persist.Load<Snapshot>(Path.Combine(GetMetaDataDir(dir), FileNameSnapShot));
 		}
 
-		internal void Save() => this.Save(GetMetaDataDir(Root) + FileNameSnapShot);
+		internal void Save()
+		{
+			var fileName = GetMetaDataDir(Root) + FileNameSnapShot;
+			var temp = fileName + ".temp";
+			if (File.Exists(temp)) File.Delete(temp);
+			this.Save(temp);
+			File.Move(temp, fileName, true);
+		}
 
 		public static void Run(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, System.Threading.CancellationToken cancellationToken)
 		{
