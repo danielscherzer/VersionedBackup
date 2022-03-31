@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace VersionedCopy.Options
 {
 	[Verb("mirror", HelpText = "Mirror the soure directory to the destination directory.")]
-	public class MirrorOptions : Options
+	public class MirrorOptions : SrcDstOptions
 	{
 		public MirrorOptions(string sourceDirectory, string destinationDirectory, IEnumerable<string> ignoreDirectories
 			, IEnumerable<string> ignoreFiles, bool readOnly)

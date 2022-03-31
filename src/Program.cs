@@ -20,6 +20,7 @@ namespace VersionedCopy
 #endif
 			// create logger service
 			Output output = new();
+			output.Report("VersionedCopy");
 			using CancellationTokenSource cts = new();
 			Console.CancelKeyPress += (_, args) =>
 			{
@@ -29,10 +30,11 @@ namespace VersionedCopy
 			};
 
 			Parse(args)
-				.WithParsed<MirrorOptions>(options => Mirror.Run(new AlgorithmEnv(options, output, cts.Token)))
-				.WithParsed<UpdateOptions>(options => Update.Run(new AlgorithmEnv(options, output, cts.Token)))
-				.WithParsed<SyncOptions>(options => Sync.Run(new AlgorithmEnv(options, output, cts.Token)))
+				.WithParsed<MirrorOptions>(options => Mirror.Run(new SrcDstEnv(options, output, cts.Token)))
+				.WithParsed<UpdateOptions>(options => Update.Run(new SrcDstEnv(options, output, cts.Token)))
+				.WithParsed<SyncOptions>(options => Sync.Run(new SrcDstEnv(options, output, cts.Token)))
 				.WithParsed<DiffOptions>(options => Diff.Save(options.Directory, options.FileName, new Env(options, output, cts.Token)))
+				.WithParsed<DiffMergeOptions>(options => Diff.Load(options.Directory, options.FileName, new Env(options, output, cts.Token)))
 				.WithParsed<AssemblyUpdateOptions>(options => AssemblyUpdate.Update());
 #if DEBUG
 			stopwatch.Benchmark("Total");
@@ -42,7 +44,7 @@ namespace VersionedCopy
 		public static ParserResult<object> Parse(string[] args)
 		{
 			var parser = new Parser(with => { with.CaseSensitive = false; with.AutoHelp = true; with.HelpWriter = Console.Error; });
-			var result = parser.ParseArguments<MirrorOptions, UpdateOptions, DiffOptions, SyncOptions, AssemblyUpdateOptions>(args);
+			var result = parser.ParseArguments<MirrorOptions, UpdateOptions, DiffOptions, DiffMergeOptions, SyncOptions, AssemblyUpdateOptions>(args);
 			return result;
 		}
 	}

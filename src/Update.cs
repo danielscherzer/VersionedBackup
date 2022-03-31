@@ -7,10 +7,10 @@ namespace VersionedCopy
 {
 	public class Update
 	{
-		public static void Run(AlgorithmEnv env)
+		public static void Run(SrcDstEnv env)
 		{
-			var src = env.Options.SourceDirectory.IncludeTrailingPathDelimiter();
-			var dst = env.Options.DestinationDirectory.IncludeTrailingPathDelimiter();
+			var src = env.Options.SourceDirectory;
+			var dst = env.Options.DestinationDirectory;
 			Console.WriteLine($"Update from '{src}' to '{dst}'");
 			// Try read snapshot from destination otherwise create
 			var taskDst = Task.Run(() => env.CreateSnapshot(dst));
@@ -27,7 +27,7 @@ namespace VersionedCopy
 			snapSrc.FindUpdatedFiles(snapDst, out var srcUpdatedFiles, out var _);
 			// Copy updated files to other side, old version move to old folder, update snapshot
 			env.UpdateFiles(srcUpdatedFiles, snapDst);
-			if (!env.Options.ReadOnly)
+			if (!env.ReadOnly)
 			{
 				//AlgorithmEnv.SaveSnapshot(snapDst, dst);
 			}

@@ -9,10 +9,10 @@ namespace VersionedCopy
 {
 	public class Sync
 	{
-		public static void Run(AlgorithmEnv env)
+		public static void Run(SrcDstEnv env)
 		{
-			var src = env.Options.SourceDirectory.IncludeTrailingPathDelimiter();
-			var dst = env.Options.DestinationDirectory.IncludeTrailingPathDelimiter();
+			var src = env.Options.SourceDirectory;
+			var dst = env.Options.DestinationDirectory;
 			Console.WriteLine($"Sync '{src}' <-> '{dst}'");
 
 			Stopwatch time = Stopwatch.StartNew();
@@ -81,7 +81,7 @@ namespace VersionedCopy
 				time.Benchmark("snapshot dst save");
 				snapSrc.Save();
 				time.Benchmark("snapshot src save");
-				if (!env.Canceled)
+				if (!env.Token.IsCancellationRequested)
 				{
 					syncs.Save();
 					time.Benchmark("Sync save");

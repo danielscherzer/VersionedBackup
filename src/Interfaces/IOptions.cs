@@ -7,7 +7,5 @@ namespace VersionedCopy.Interfaces
 		IEnumerable<string> IgnoreDirectories { get; }
 		IEnumerable<string> IgnoreFiles { get; }
 		bool ReadOnly { get; }
-		string DestinationDirectory { get; }
-		string SourceDirectory { get; }
 	}
 }

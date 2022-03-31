@@ -7,10 +7,10 @@ namespace VersionedCopy
 {
 	public static class Mirror
 	{
-		public static void Run(AlgorithmEnv env)
+		public static void Run(SrcDstEnv env)
 		{
-			var src = env.Options.SourceDirectory.IncludeTrailingPathDelimiter();
-			var dst = env.Options.DestinationDirectory.IncludeTrailingPathDelimiter();
+			var src = env.Options.SourceDirectory;
+			var dst = env.Options.DestinationDirectory;
 			Console.WriteLine($"Mirror from '{src}' to '{dst}'");
 			// Create a snapshot from destination
 			// Try read snapshot from destination otherwise create
@@ -34,7 +34,7 @@ namespace VersionedCopy
 			// overwrite changed files in destination
 			RelativeFileList oldSrcFiles = new(snapSrc.Root, dstUpdatedFiles.Items);
 			env.UpdateFiles(oldSrcFiles, snapDst);
-			if (!env.Options.ReadOnly)
+			if (!env.ReadOnly)
 			{
 				//TODO: update snapshots
 				//AlgorithmEnv.SaveSnapshot(snapSrc, src); //after mirror source snapshot == destination snapshot, only if no errors and no cancel

@@ -38,7 +38,7 @@ namespace VersionedCopy.Tests
 		[DataRow("Sync", "d:\\daten", "e:\\daten", "--ignoreFiles", "desktop.ini", "--ignoreDirectories", ".vs")]
 		public void ParseArgumentsTest(params string[] args)
 		{
-			void AllTest(IOptions options)
+			void AllTest(ISrcDstOptions options)
 			{
 				Assert.AreEqual(Dir(args[1]), options.SourceDirectory);
 				Assert.AreEqual(Dir(args[2]), options.DestinationDirectory);
@@ -55,7 +55,7 @@ namespace VersionedCopy.Tests
 					CollectionAssert.AreEquivalent(ignoreFiles, options.IgnoreFiles.ToArray());
 				}
 			}
-			void Verb(string verb, IOptions options)
+			void Verb(string verb, ISrcDstOptions options)
 			{
 				Assert.AreEqual(args[0].ToLowerInvariant(), verb);
 				AllTest(options);

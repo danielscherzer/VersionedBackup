@@ -12,6 +12,11 @@ namespace VersionedCopy
 {
 	public static class Diff
 	{
+		static byte[] key =
+{
+				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+				0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16
+			};
 		public static void AddEntry(this ZipArchive zip, string fileName, string key)
 		{
 			if (Snapshot.IsFile(fileName))
@@ -30,7 +35,11 @@ namespace VersionedCopy
 		{
 			Console.WriteLine($"Load diff from '{diffFileName}' to '{directory}'");
 			using var stream = File.OpenRead(diffFileName);
-			using var zip = new ZipArchive(stream, ZipArchiveMode.Create, false, Encoding.UTF8);
+			using var aes = Aes.Create();
+			stream.Read(aes.IV, 0, aes.IV.Length);
+			aes.Key = key;
+			using var cryptoStream = new CryptoStream(stream, aes.CreateDecryptor(), CryptoStreamMode.Read);
+			using var zip = new ZipArchive(cryptoStream, ZipArchiveMode.Read, false, Encoding.UTF8);
 			foreach(var entry in zip.Entries)
 			{
 
@@ -40,7 +49,7 @@ namespace VersionedCopy
 		{
 			Console.WriteLine($"Store diff from '{directory}' to '{dstFileName}'");
 			// Create a snapshot from source
-			var taskSnap = Task.Run(() => Snapshot.Create(directory, env.IgnoreDirectories, env.IgnoreFiles, env.Token));
+			var taskSnap = Task.Run(() => env.CreateSnapshot(directory));
 			// load old snapshot from source
 			var taskSnapOld = Task.Run(() => Snapshot.Load(directory));
 			Task.WaitAll(new Task[] { taskSnap, taskSnapOld }, cancellationToken: env.Token);
@@ -51,16 +60,16 @@ namespace VersionedCopy
 			if (taskSnapOld.Result is Snapshot snapOld)
 			{
 				using var stream = File.Create(dstFileName);
-
-				//using var provider = new AesCryptoServiceProvider();
-				//stream.Write(provider.IV, 0, provider.IV.Length);
-				//using var cryptoTransform = provider.CreateEncryptor();
-				//using var cryptoStream = new CryptoStream(stream, cryptoTransform, CryptoStreamMode.Write);
+				
+				using var aes = Aes.Create();
+				stream.Write(aes.IV, 0, aes.IV.Length);
+				aes.Key = key;
+				using var cryptoStream = new CryptoStream(stream, aes.CreateEncryptor(), CryptoStreamMode.Write);
 
 				var singles = snap.Singles(snapOld);
 				snap.FindUpdatedFiles(snapOld, out var changedFiles, out var replacedFiles);
 
-				using var zip = new ZipArchive(stream, ZipArchiveMode.Create, false, Encoding.UTF8);
+				using var zip = new ZipArchive(cryptoStream, ZipArchiveMode.Create, false, Encoding.UTF8);
 				//store singles and changed files
 				foreach (var file in singles.Concat(changedFiles).Concat(replacedFiles))
 				{
