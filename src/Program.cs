@@ -1,7 +1,9 @@
 using CommandLine;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics;
 using System.Threading;
+using VersionedCopy.Interfaces;
 using VersionedCopy.Options;
 using VersionedCopy.PathHelper;
 using VersionedCopy.Services;
@@ -30,7 +32,7 @@ namespace VersionedCopy
 				.WithParsed<MirrorOptions>(options => Mirror.Run(new AlgorithmEnv(options, output, cts.Token)))
 				.WithParsed<UpdateOptions>(options => Update.Run(new AlgorithmEnv(options, output, cts.Token)))
 				.WithParsed<SyncOptions>(options => Sync.Run(new AlgorithmEnv(options, output, cts.Token)))
-				.WithParsed<SnapshotOptions>(options => Snapshot.Run(options.Directory, options.FileName, options.IgnoreDirectories, options.IgnoreFiles, cts.Token))
+				.WithParsed<DiffOptions>(options => Diff.Save(options.Directory, options.FileName, new Env(options, output, cts.Token)))
 				.WithParsed<AssemblyUpdateOptions>(options => AssemblyUpdate.Update());
 #if DEBUG
 			stopwatch.Benchmark("Total");
@@ -40,7 +42,7 @@ namespace VersionedCopy
 		public static ParserResult<object> Parse(string[] args)
 		{
 			var parser = new Parser(with => { with.CaseSensitive = false; with.AutoHelp = true; with.HelpWriter = Console.Error; });
-			var result = parser.ParseArguments<MirrorOptions, UpdateOptions, SyncOptions, SnapshotOptions, AssemblyUpdateOptions>(args);
+			var result = parser.ParseArguments<MirrorOptions, UpdateOptions, DiffOptions, SyncOptions, AssemblyUpdateOptions>(args);
 			return result;
 		}
 	}

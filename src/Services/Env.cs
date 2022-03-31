@@ -1,54 +1,34 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
-using VersionedCopy.Interfaces;
+using VersionedCopy.Options;
 using VersionedCopy.PathHelper;
 
 namespace VersionedCopy.Services
 {
 	using Entry = KeyValuePair<string, DateTime>;
 
-	public class AlgorithmEnv
+	public class Env
 	{
-		public AlgorithmEnv(IOptions options, IOutput output, CancellationToken token)
+		public Env(DiffOptions options, Output output, CancellationToken token)
 		{
-			Options = options;
-			Output = output;
-			FileSystem = new FileSystem(output, options.ReadOnly);
-			Token = token;
 			output.Report("VersionedCopy");
 			if (options.ReadOnly) output.Report("Read only mode");
 			output.Report($"Ignore directories: { string.Join(';', options.IgnoreDirectories)}");
 			output.Report($"Ignore files: { string.Join(';', options.IgnoreFiles)}");
-			if (options.SourceDirectory == options.DestinationDirectory)
-			{
-				output.Error("Source and destination must be different!");
-				return;
-
-			}
-			if (!Directory.Exists(options.SourceDirectory))
-			{
-				output.Error($"Source directory '{options.SourceDirectory}' does not exist");
-				return;
-			}
-			if (!Directory.Exists(options.DestinationDirectory))
-			{
-				if (options.ReadOnly)
-				{
-					output.Error($"Destination directory '{options.DestinationDirectory}' does not exist");
-					return;
-				}
-				else
-				{
-					if (FileSystem.CreateDirectory(options.DestinationDirectory))
-					{
-						output.Report($"Create directory '{options.DestinationDirectory}'");
-					}
-				}
-			}
+			FileSystem = new FileSystem(output, options.ReadOnly);
+			IgnoreDirectories = options.IgnoreDirectories.Select(dir => dir.NormalizePathDelimiter().IncludeTrailingPathDelimiter());
+			IgnoreFiles = options.IgnoreFiles.Select(file => file.NormalizePathDelimiter());
+			Output = output;
+			Token = token;
 		}
+
+		public FileSystem FileSystem { get; }
+		public IEnumerable<string> IgnoreDirectories { get; }
+		public IEnumerable<string> IgnoreFiles { get; }
+		public Output Output { get; }
+		public CancellationToken Token { get; }
 
 		internal void Copy(RelativeFileList toCopy, Snapshot snapDst)
 		{
@@ -77,7 +57,7 @@ namespace VersionedCopy.Services
 
 		internal Snapshot CreateSnapshot(string root)
 		{
-			return Snapshot.Create(root, Options.IgnoreDirectories, Options.IgnoreFiles, Token);
+			return Snapshot.Create(root, IgnoreDirectories, IgnoreFiles, Token);
 		}
 
 		internal void MoveAway(Snapshot snapshot, IEnumerable<Entry> toDelete)
@@ -122,7 +102,6 @@ namespace VersionedCopy.Services
 			FileSystem.SetTimeStamp(fileName, newTime);
 		}
 
-
 		internal void UpdateFiles(RelativeFileList updatedFiles, Snapshot snapDst)
 		{
 			foreach (var file in updatedFiles)
@@ -141,10 +120,53 @@ namespace VersionedCopy.Services
 			}
 		}
 
-		public bool Canceled => Token.IsCancellationRequested;
-		public IOptions Options { get; }
-		private CancellationToken Token { get; }
-		public FileSystem FileSystem { get; }
-		public IOutput Output { get; }
+		//TODO: multithreaded does not work well with stick internal void Copy(string src, string dst, IEnumerable<Entry> srcNew)
+		//{
+		//	try
+		//	{
+		//		// create directories
+		//		Parallel.ForEach(srcNew.Where(file => !Snapshot.IsFile(file.Key)), new ParallelOptions { CancellationToken = Token }, file =>
+		//		{
+		//			var fileName = file.Key;
+		//			if (FileOperations.CreateDirectory(dst + fileName, file.Value))
+		//			{
+		//				Output.Report($"Create directory '{dst + fileName}'");
+		//			}
+		//		});
+		//		// files
+		//		Parallel.ForEach(srcNew.Where(file => Snapshot.IsFile(file.Key)), new ParallelOptions { CancellationToken = Token }, file =>
+		//		{
+		//			var fileName = file.Key;
+		//			if (FileOperations.Copy(src + fileName, dst + fileName))
+		//			{
+		//				Output.Report($"New file '{dst + fileName}'");
+		//			}
+		//		});
+		//	}
+		//	catch (OperationCanceledException)
+		//	{
+		//	}
+		//}
+
+		//TODO: multithreaded does not work well with stick internal void UpdateFiles(string src, string dst, IEnumerable<Entry> updatedFiles)
+		//{
+		//	try
+		//	{
+		//		Parallel.ForEach(updatedFiles, new ParallelOptions { CancellationToken = Token }, file =>
+		//		{
+		//			var fileName = file.Key;
+		//			if (FileOperations.MoveFile(dst + fileName, Options.OldFilesFolder + fileName)) //move away old
+		//			{
+		//				if (FileOperations.Copy(src + fileName, dst + fileName)) //copy new
+		//				{
+		//					Output.Report($"Update file '{dst + fileName}'");
+		//				}
+		//			}
+		//		});
+		//	}
+		//	catch (OperationCanceledException)
+		//	{
+		//	}
+		//}
 	}
 }

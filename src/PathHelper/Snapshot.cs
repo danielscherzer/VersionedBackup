@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -100,14 +99,6 @@ namespace VersionedCopy.PathHelper
 			if (File.Exists(temp)) File.Delete(temp);
 			this.Save(temp);
 			File.Move(temp, fileName, true);
-		}
-
-		public static void Run(string directory, string databaseFileName, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, System.Threading.CancellationToken cancellationToken)
-		{
-			Console.WriteLine($"Store state '{directory}' to '{databaseFileName}'");
-			var state = Create(directory, ignoreDirectories, ignoreFiles, cancellationToken);
-			string json = JsonConvert.SerializeObject(state, Formatting.Indented);
-			File.WriteAllText(databaseFileName, json);
 		}
 
 		private static DateTime Round(DateTime dateTime, TimeSpan interval)

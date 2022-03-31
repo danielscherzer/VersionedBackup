@@ -20,7 +20,7 @@ namespace VersionedCopy
 			var taskDst = Task.Run(() => Snapshot.Load(dst) ?? env.CreateSnapshot(dst));
 			// Create a snapshot from source
 			var taskSrc = Task.Run(() => env.CreateSnapshot(src));
-			// try load old snapshort from source
+			// try load old snapshot from source
 			var taskSrcOld = Task.Run(() => Snapshot.Load(src));
 			Task.WaitAll(taskSrc, taskDst);
 			var snapSrc = taskSrc.Result;
