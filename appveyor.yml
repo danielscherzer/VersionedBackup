@@ -23,6 +23,12 @@ before_build:
 build:
   verbosity: minimal              # MSBuild verbosity level
 
+test:
+  # only categories to test
+  categories:
+    except:
+    - Hack
+
 artifacts:
 - path: src\Bin\$(configuration)
   name: $(APPVEYOR_PROJECT_NAME)

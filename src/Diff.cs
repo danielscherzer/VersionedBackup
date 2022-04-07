@@ -12,7 +12,7 @@ namespace VersionedCopy
 {
 	public static class Diff
 	{
-		static byte[] key =
+		static readonly byte[] key =
 {
 				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 				0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16
@@ -61,15 +61,15 @@ namespace VersionedCopy
 			{
 				using var stream = File.Create(dstFileName);
 				
-				using var aes = Aes.Create();
-				stream.Write(aes.IV, 0, aes.IV.Length);
-				aes.Key = key;
-				using var cryptoStream = new CryptoStream(stream, aes.CreateEncryptor(), CryptoStreamMode.Write);
+				//using var aes = Aes.Create();
+				//stream.Write(aes.IV, 0, aes.IV.Length);
+				//aes.Key = key;
+				//using var cryptoStream = new CryptoStream(stream, aes.CreateEncryptor(), CryptoStreamMode.Write);
 
 				var singles = snap.Singles(snapOld);
 				snap.FindUpdatedFiles(snapOld, out var changedFiles, out var replacedFiles);
 
-				using var zip = new ZipArchive(cryptoStream, ZipArchiveMode.Create, false, Encoding.UTF8);
+				using var zip = new ZipArchive(stream, ZipArchiveMode.Create, false, Encoding.UTF8);
 				//store singles and changed files
 				foreach (var file in singles.Concat(changedFiles).Concat(replacedFiles))
 				{

@@ -67,9 +67,6 @@ namespace VersionedCopy.Tests
 		}
 
 		[TestCleanup]
-		public void TestCleanup()
-		{
-			Cleanup();
-		}
+		public void TestCleanup() => Cleanup();
 	}
 }

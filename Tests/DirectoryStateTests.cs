@@ -1,4 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Diagnostics;
+using System.Linq;
+using VersionedCopy.PathHelper;
+using VersionedCopy.Services;
 using static VersionedCopy.Tests.FileSystemHelper;
 
 namespace VersionedCopy.Tests
@@ -6,7 +10,7 @@ namespace VersionedCopy.Tests
 	[TestClass()]
 	public class DirectoryStateTests
 	{
-		[TestMethod()]
+		[TestMethod(), TestCategory("Hack")]
 		public void CreateTest()
 		{
 			//var stopwatch = Stopwatch.StartNew();
@@ -14,7 +18,7 @@ namespace VersionedCopy.Tests
 			////File.WriteAllText(@"d:\daten_state.json", JsonConvert.SerializeObject(state, Formatting.Indented));
 			//stopwatch.Benchmark("save");
 			//var state2 = DirectoryState.Create(@"d:\daten", new string[] { ".vs\\", "bin\\", "obj\\" }, Enumerable.Empty<string>());
-			////File.WriteAllText(@"d:\daten_state2.json", JsonConvert.SerializeObject(state2, Formatting.Indented));
+			//File.WriteAllText(@"d:\daten_state2.json", JsonConvert.SerializeObject(state2, Formatting.Indented));
 		}
 
 		[TestCleanup]
