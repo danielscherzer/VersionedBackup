@@ -41,7 +41,7 @@ namespace VersionedCopy.PathHelper
 					{
 						otherUpdatedFileList.Add(file);
 					}
-					else
+					else //if (secondsDiff < 0)
 					{
 						mineUpdatedFileList.Add(new Entry(file.Key, writeTime));
 					}
