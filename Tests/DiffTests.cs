@@ -8,13 +8,13 @@ namespace VersionedCopy.Tests
 		[TestMethod(), TestCategory("Hack")]
 		public void RunTest()
 		{
-			Program.Main(new string[] { "diff", @"d:\daten", @"d:\diff.zip", "--ignoreDirectories", ".vs", "bin", "obj", "TestResults", });
+			//Program.Main(new string[] { "diff", @"d:\daten", @"d:\diff.zip", "--ignoreDirectories", ".vs", "bin", "obj", "TestResults", });
 		}
 
 		[TestMethod(), TestCategory("Hack")]
 		public void LoadTest()
 		{
-			Program.Main(new string[] { "diffmerge", @"d:\daten", @"d:\diff.zip", "--ignoreDirectories", ".vs", "bin", "obj", "TestResults", });
+			//Program.Main(new string[] { "diffmerge", @"d:\daten", @"d:\diff.zip", "--ignoreDirectories", ".vs", "bin", "obj", "TestResults", });
 		}
 	}
 }

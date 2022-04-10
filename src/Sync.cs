@@ -74,7 +74,7 @@ namespace VersionedCopy
 
 			time.Benchmark("Copy");
 
-			if (!env.Options.ReadOnly)
+			if (!env.ReadOnly)
 			{
 				//save snapshots with changes
 				snapDst.Save();

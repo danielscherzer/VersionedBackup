@@ -29,7 +29,8 @@ namespace VersionedCopy
 			env.UpdateFiles(srcUpdatedFiles, snapDst);
 			if (!env.ReadOnly)
 			{
-				//AlgorithmEnv.SaveSnapshot(snapDst, dst);
+				//save snapshots with changes
+				snapDst.Save();
 			}
 		}
 	}

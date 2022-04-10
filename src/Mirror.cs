@@ -36,10 +36,8 @@ namespace VersionedCopy
 			env.UpdateFiles(oldSrcFiles, snapDst);
 			if (!env.ReadOnly)
 			{
-				//TODO: update snapshots
-				//AlgorithmEnv.SaveSnapshot(snapSrc, src); //after mirror source snapshot == destination snapshot, only if no errors and no cancel
-				//AlgorithmEnv.SaveSnapshot(snapDst, dst); //after mirror source snapshot == destination snapshot, only if no errors and no cancel
-				//AlgorithmEnv.SaveSnapshot(snapSrc, dst); //after mirror source snapshot == destination snapshot, only if no errors and no cancel
+				//save snapshots with changes
+				snapDst.Save();
 			}
 		}
 	}
