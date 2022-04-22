@@ -24,11 +24,6 @@ namespace VersionedCopy.Tests
 
 			foreach (var item in listSrc) Assert.IsTrue(Exists(dst, item));
 			foreach (var item in listDst) Assert.IsTrue(Exists(src, item));
-
-			// nothing to do -> no old dir
-			Program.Main(new string[] { "sync", src, dst });
-			var backupDir = GetBackupPath(dst);
-			Assert.AreEqual(string.Empty, backupDir);
 		}
 
 		[TestCleanup]

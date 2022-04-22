@@ -5,15 +5,16 @@ using System.IO;
 using System.Linq;
 using VersionedCopy.Interfaces;
 using VersionedCopy.Services;
-
 namespace VersionedCopy.PathHelper
 {
+	using Entry = KeyValuePair<string, DateTime>;
+
 	public class Snapshot
 	{
 		public Snapshot(string root)
 		{
 			Root = Path.GetFullPath(root).IncludeTrailingPathDelimiter();
-			BackupDir = $"{GetMetaDataDir(Root)}{Path.DirectorySeparatorChar}{DateTime.Now:yyyy-MM-dd_HHmmss}{Path.DirectorySeparatorChar}";
+			BackupDir = GetMetaDataDir(Root);
 		}
 
 		public const string CommonFileNamePart = ".versioned.copy";
@@ -35,10 +36,17 @@ namespace VersionedCopy.PathHelper
 		public SortedDictionary<string, DateTime> Entries { get; } = new();
 
 		public string FullName(string fileName) => Root + fileName;
-		
+
+		public string BackupName(Entry file)
+		{
+			var ext = Path.GetExtension(file.Key) ?? string.Empty;
+			ext = $".{file.Value:yyyy-MM-dd_HHmmss}{ext}";
+			return $"{BackupDir}{Path.ChangeExtension(file.Key, ext)}";
+		}
+
 		public string Root { get; private set; }
 		
-		public string BackupDir { get; }
+		private string BackupDir { get; }
 
 		public static bool IsFile(string fileName) => !Path.EndsInDirectorySeparator(fileName);
 

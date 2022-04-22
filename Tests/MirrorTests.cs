@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using VersionedCopy.Services;
+using System.IO;
+using System.Linq;
 using static VersionedCopy.Tests.FileSystemHelper;
 
 namespace VersionedCopy.Tests
@@ -26,9 +27,9 @@ namespace VersionedCopy.Tests
 			Program.Main(new string[] { "mirror", src, dst });
 			var old = GetBackupPath(dst);
 
-			Assert.IsTrue(Exists(old, "F3"));
+			Assert.IsTrue(Directory.EnumerateFiles(old, "F3*").Any());
 			Assert.IsTrue(Exists(old, "x\\"));
-			Assert.IsTrue(Exists(old, "y\\F3"));
+			Assert.IsTrue(Directory.EnumerateFiles(old, "y\\F3*").Any());
 
 			Assert.IsTrue(Exists(dst, "F1"));
 			Assert.IsTrue(Exists(dst, "F2"));
@@ -51,8 +52,8 @@ namespace VersionedCopy.Tests
 
 			var newDstF1 = Read(dst, "a\\b\\c\\F1");
 			Assert.AreEqual(srcF1, newDstF1);
-			var oldF1 = Read(old, "a\\b\\c\\F1");
-			Assert.AreEqual(dstF1, oldF1);
+			var oldF1 = Directory.EnumerateFiles(old, "a\\b\\c\\F1*").First();
+			Assert.AreEqual(dstF1, File.ReadAllText(oldF1));
 		}
 
 		[TestCleanup]

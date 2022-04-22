@@ -54,7 +54,7 @@ namespace VersionedCopy.Services
 				//move deleted to old
 				if (Snapshot.IsFile(fileName))
 				{
-					if (env.FileSystem.MoveFile(path, snapshot.BackupDir + fileName))
+					if (env.FileSystem.MoveFile(path, snapshot.BackupName(file)))
 					{
 						snapshot.Entries.Remove(fileName);
 						env.Output.Report($"Backup deleted file '{path}'");
@@ -62,7 +62,7 @@ namespace VersionedCopy.Services
 				}
 				else
 				{
-					if (env.FileSystem.MoveDirectory(path, snapshot.BackupDir + fileName))
+					if (env.FileSystem.MoveDirectory(path, snapshot.BackupName(file)))
 					{
 						snapshot.Entries.Remove(fileName);
 						alreadyMovedDirs.Add(fileName);
@@ -79,7 +79,7 @@ namespace VersionedCopy.Services
 				if (env.Token.IsCancellationRequested) return;
 				var fileName = file.Key;
 				var dstPath = snapDst.FullName(fileName);
-				if (env.FileSystem.MoveFile(dstPath, snapDst.BackupDir + fileName)) //move away old
+				if (env.FileSystem.MoveFile(dstPath, snapDst.BackupName(file))) //move away old
 				{
 					if (env.FileSystem.Copy(updatedFiles.FullName(fileName), dstPath)) //copy new
 					{
