@@ -59,7 +59,7 @@ namespace VersionedCopy
 			snapSrc.FindNewAndToDelete(snapDst, syncs.LastSyncTime, out var srcNew, out var srcToDelete);
 			snapDst.FindNewAndToDelete(snapSrc, syncs.LastSyncTime, out var dstNew, out var dstToDelete);
 			time.Benchmark("Create lists");
-			if(!srcUpdatedFiles.Any() && !dstUpdatedFiles.Any() && !srcNew.Any() && dstNew.Any() && !srcToDelete.Any() && !dstToDelete.Any())
+			if(!(srcUpdatedFiles.Any() || dstUpdatedFiles.Any() || srcNew.Any() || dstNew.Any() || srcToDelete.Any() || dstToDelete.Any()))
 			{
 				env.Output.Report("Everything up-to-date");
 				return;
