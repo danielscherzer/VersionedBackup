@@ -14,7 +14,7 @@ namespace VersionedCopy.PathHelper
 		public Snapshot(string root)
 		{
 			Root = Path.GetFullPath(root).IncludeTrailingPathDelimiter();
-			BackupDir = GetMetaDataDir(Root);
+			BackupDir = $"{GetMetaDataDir(Root)}{DateTime.Now:yyyy-MM-dd_HHmmss}{Path.DirectorySeparatorChar}";
 		}
 
 		public const string CommonFileNamePart = ".versioned.copy";
@@ -37,12 +37,7 @@ namespace VersionedCopy.PathHelper
 
 		public string FullName(string fileName) => Root + fileName;
 
-		public string BackupName(Entry file)
-		{
-			var ext = Path.GetExtension(file.Key) ?? string.Empty;
-			ext = $".{file.Value:yyyy-MM-dd_HHmmss}{ext}";
-			return $"{BackupDir}{Path.ChangeExtension(file.Key, ext)}";
-		}
+		public string BackupName(Entry file) => BackupDir + file.Key;
 
 		public string Root { get; private set; }
 		

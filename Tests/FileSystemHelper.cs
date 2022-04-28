@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using VersionedCopy.PathHelper;
@@ -14,7 +13,10 @@ namespace VersionedCopy.Tests
 		
 		public static string GetBackupPath(string path)
 		{
-			return Snapshot.GetMetaDataDir(path);
+			var metadDir = Snapshot.GetMetaDataDir(path);
+			DirectoryInfo dir = new(metadDir);
+			var subDir = dir.EnumerateDirectories().LastOrDefault();
+			return subDir is null ? string.Empty : subDir.FullName + Path.DirectorySeparatorChar;
 		}
 
 		public static void Cleanup()
@@ -49,11 +51,6 @@ namespace VersionedCopy.Tests
 			{
 				return File.Exists(path);
 			}
-		}
-
-		public static IEnumerable<string> SearchFiles(string path1, string path2)
-		{
-			return Directory.EnumerateFiles(path1, path2);
 		}
 
 		public static string Read(string path1, string path2)
