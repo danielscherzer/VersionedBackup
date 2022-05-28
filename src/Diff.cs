@@ -1,19 +1,19 @@
-﻿using System;
-using System.IO.Compression;
+﻿using Newtonsoft.Json;
+using System;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using VersionedCopy.PathHelper;
 using VersionedCopy.Services;
-using System.Linq;
-using System.Security.Cryptography;
-using Newtonsoft.Json;
 
 namespace VersionedCopy
 {
 	public static class Diff
 	{
-		static readonly byte[] key =
+		private static readonly byte[] key =
 {
 				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 				0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16
@@ -41,7 +41,7 @@ namespace VersionedCopy
 			aes.Key = key;
 			using var cryptoStream = new CryptoStream(stream, aes.CreateDecryptor(), CryptoStreamMode.Read);
 			using var zip = new ZipArchive(cryptoStream, ZipArchiveMode.Read, false, Encoding.UTF8);
-			foreach(var entry in zip.Entries)
+			foreach (var entry in zip.Entries)
 			{
 
 			}
@@ -71,7 +71,7 @@ namespace VersionedCopy
 				}
 
 				using var stream = File.Create(dstFileName);
-				
+
 				//using var aes = Aes.Create();
 				//stream.Write(aes.IV, 0, aes.IV.Length);
 				//aes.Key = key;

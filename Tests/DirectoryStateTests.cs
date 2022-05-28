@@ -1,8 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics;
-using System.Linq;
-using VersionedCopy.PathHelper;
-using VersionedCopy.Services;
 using static VersionedCopy.Tests.FileSystemHelper;
 
 namespace VersionedCopy.Tests

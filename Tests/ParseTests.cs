@@ -11,15 +11,15 @@ namespace VersionedCopy.Tests
 	[TestClass()]
 	public class ParseTests
 	{
-		static bool IsReadOnly(string arg)
+		private static bool IsReadOnly(string arg)
 		{
 			arg = arg.ToLowerInvariant();
 			return arg.StartsWith("--read") || arg.StartsWith("-r");
 		}
 
-		static string Dir(string dir) => dir.IncludeTrailingPathDelimiter();
+		private static string Dir(string dir) => dir.IncludeTrailingPathDelimiter();
 
-		static IEnumerable<string> TakeOption(IEnumerable<string> seq, string start)
+		private static IEnumerable<string> TakeOption(IEnumerable<string> seq, string start)
 		{
 			return seq.SkipWhile(arg => !arg.ToLowerInvariant().StartsWith(start.ToLowerInvariant()))
 				.Skip(1).TakeWhile(arg => !arg.StartsWith("-"));

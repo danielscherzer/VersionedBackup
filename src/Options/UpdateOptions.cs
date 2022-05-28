@@ -7,7 +7,7 @@ namespace VersionedCopy.Options
 	public class UpdateOptions : SrcDstOptions
 	{
 		public UpdateOptions(string sourceDirectory, string destinationDirectory
-			, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, bool readOnly) 
+			, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, bool readOnly)
 			: base(sourceDirectory, destinationDirectory, ignoreDirectories, ignoreFiles, readOnly)
 		{
 		}

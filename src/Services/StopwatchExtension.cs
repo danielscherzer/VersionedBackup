@@ -5,6 +5,7 @@ namespace VersionedCopy.Services
 {
 	public static class StopwatchExtension
 	{
+		[Conditional("DEBUG")]
 		public static void Benchmark(this Stopwatch stopwatch, string message)
 		{
 			var elapsed = stopwatch.Elapsed;

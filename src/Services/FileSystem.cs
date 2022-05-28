@@ -72,9 +72,9 @@ namespace VersionedCopy.Services
 				{
 					var file = new FileInfo(filePath);
 					var wasReadOnly = file.IsReadOnly;
-					if(wasReadOnly) file.IsReadOnly = false;
+					if (wasReadOnly) file.IsReadOnly = false;
 					file.LastWriteTimeUtc = newTime;
-					if(wasReadOnly) file.IsReadOnly = true;
+					if (wasReadOnly) file.IsReadOnly = true;
 				}
 				else
 				{
@@ -82,7 +82,7 @@ namespace VersionedCopy.Services
 					var wasReadOnly = 0 != (dir.Attributes & FileAttributes.ReadOnly);
 					if (wasReadOnly) dir.Attributes &= ~FileAttributes.ReadOnly;
 					dir.CreationTimeUtc = newTime;
-					if(wasReadOnly) dir.Attributes |= FileAttributes.ReadOnly;
+					if (wasReadOnly) dir.Attributes |= FileAttributes.ReadOnly;
 				}
 			});
 		}

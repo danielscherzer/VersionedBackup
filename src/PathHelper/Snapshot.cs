@@ -40,7 +40,7 @@ namespace VersionedCopy.PathHelper
 		public string BackupName(Entry file) => BackupDir + file.Key;
 
 		public string Root { get; private set; }
-		
+
 		private string BackupDir { get; }
 
 		public static bool IsFile(string fileName) => !Path.EndsInDirectorySeparator(fileName);

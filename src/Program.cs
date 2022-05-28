@@ -1,18 +1,15 @@
 using CommandLine;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics;
 using System.Threading;
-using VersionedCopy.Interfaces;
 using VersionedCopy.Options;
-using VersionedCopy.PathHelper;
 using VersionedCopy.Services;
 
 namespace VersionedCopy
 {
 	public static class Program
 	{
-		
+
 		public static void Main(string[] args)
 		{
 #if DEBUG
@@ -36,9 +33,7 @@ namespace VersionedCopy
 				.WithParsed<DiffOptions>(options => Diff.Save(options.Directory, options.FileName, new Env(options, output, cts.Token)))
 				.WithParsed<DiffMergeOptions>(options => Diff.Load(options.Directory, options.FileName, new Env(options, output, cts.Token)))
 				.WithParsed<AssemblyUpdateOptions>(options => AssemblyUpdate.Update());
-#if DEBUG
 			stopwatch.Benchmark("Total");
-#endif
 		}
 
 		public static ParserResult<object> Parse(string[] args)

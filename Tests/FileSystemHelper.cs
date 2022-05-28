@@ -10,7 +10,7 @@ namespace VersionedCopy.Tests
 		private static readonly string Root = Path.Combine(Path.GetTempPath(), "VersionedCopy");
 
 		public static string ToPath(params string[] nameParts) => Path.Combine(Root, Path.Join(nameParts));
-		
+
 		public static string GetBackupPath(string path)
 		{
 			var metadDir = Snapshot.GetMetaDataDir(path);
