@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using VersionedCopy.PathHelper;
@@ -14,9 +13,8 @@ namespace VersionedCopy
 			var src = env.Options.SourceDirectory;
 			var dst = env.Options.DestinationDirectory;
 			env.Output.Report($"Sync '{src}' <-> '{dst}'");
-#if DEBUG
 			Stopwatch time = Stopwatch.StartNew();
-#endif
+
 			// Try read snapshot from destination otherwise create
 			var taskDst = Task.Run(() => Snapshot.Load(dst) ?? env.CreateSnapshot(dst));
 			// Create a snapshot from source

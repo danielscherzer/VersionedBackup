@@ -12,9 +12,7 @@ namespace VersionedCopy
 
 		public static void Main(string[] args)
 		{
-#if DEBUG
 			Stopwatch stopwatch = Stopwatch.StartNew();
-#endif
 			// create logger service
 			Output output = new();
 			output.Report("VersionedCopy");
