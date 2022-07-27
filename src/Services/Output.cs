@@ -31,7 +31,7 @@ namespace VersionedCopy.Services
 		{
 			if (!string.IsNullOrEmpty(logFile))
 			{
-				File.AppendAllText(logFile, $"{DateTime.Now:yyyy-MM-dd_HHmmss} : {message}{Environment.NewLine}");
+				File.AppendAllText(logFile, $"[{DateTime.Now:yyyy-MM-dd_HH:mm:ss}] {message}{Environment.NewLine}");
 			}
 		}
 	}
