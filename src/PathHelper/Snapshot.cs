@@ -101,7 +101,13 @@ public class Snapshot
 
 	internal static Snapshot? Load(string root)
 	{
-		var snapshot = Persist.Load<Snapshot>(Path.Combine(GetMetaDataDir(root), FileNameSnapShot));
+		var fileName = Path.Combine(GetMetaDataDir(root), FileNameSnapShot);
+		var entries = Persist.Load<SortedDictionary<string, DateTime>>(fileName);
+		if(entries != null)
+		{
+			return new Snapshot(root, entries);
+		}
+		var snapshot = Persist.Load<Snapshot>(fileName);
 		return snapshot != null ? new Snapshot(root, snapshot.Entries) : null;
 	}
 
@@ -110,7 +116,7 @@ public class Snapshot
 		var fileName = GetMetaDataDir(Root) + FileNameSnapShot;
 		var temp = fileName + ".temp";
 		if (File.Exists(temp)) File.Delete(temp);
-		this.Save(temp);
+		Entries.Save(temp);
 		File.Move(temp, fileName, true);
 	}
 }

@@ -16,9 +16,16 @@ namespace VersionedCopy.Services
 		internal static TData? Load<TData>(string fileName)
 		{
 			if (!File.Exists(fileName)) return default;
-			var json = File.ReadAllText(fileName);
-			//return JsonSerializer.Deserialize<TData>(json);
-			return JsonConvert.DeserializeObject<TData>(json);
+			try
+			{
+				var json = File.ReadAllText(fileName);
+				//return JsonSerializer.Deserialize<TData>(json);
+				return JsonConvert.DeserializeObject<TData>(json);
+			}
+			catch
+			{
+				return default;
+			}
 		}
 	}
 }
