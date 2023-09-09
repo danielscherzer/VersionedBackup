@@ -4,11 +4,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using VersionedCopy.Services;
+
+using Entry = System.Collections.Generic.KeyValuePair<string, System.DateTime>;
 
 namespace VersionedCopy.PathHelper;
-
-using Entry = KeyValuePair<string, DateTime>;
 
 public class Snapshot
 {
@@ -103,11 +102,11 @@ public class Snapshot
 	{
 		var fileName = Path.Combine(GetMetaDataDir(root), FileNameSnapShot);
 		var entries = Persist.Load<SortedDictionary<string, DateTime>>(fileName);
-		if(entries != null)
+		if (entries != null)
 		{
 			return new Snapshot(root, entries);
 		}
-		var snapshot = Persist.Load<Snapshot>(fileName);
+		var snapshot = Persist.Load<Snapshot>(fileName); //TODO: old format of snapshot file since 2023-09; remove in the future.
 		return snapshot != null ? new Snapshot(root, snapshot.Entries) : null;
 	}
 

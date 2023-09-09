@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using VersionedCopy.Interfaces;
 
+using Entry = System.Collections.Generic.KeyValuePair<string, System.DateTime>;
+
 namespace VersionedCopy.PathHelper;
-
-using Entry = KeyValuePair<string, DateTime>;
-
 public static class SnapshotExtensions
 {
 	public static void FindNewAndToDelete(this Snapshot mine, Snapshot other, DateTime lastSync, out RelativeFileList newEntries, out RelativeFileList toDeleteEntries)

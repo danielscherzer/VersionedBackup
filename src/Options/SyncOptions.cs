@@ -1,14 +1,13 @@
 ﻿using CommandLine;
 using System.Collections.Generic;
 
-namespace VersionedCopy.Options
+namespace VersionedCopy.Options;
+
+[Verb("sync", HelpText = "Sync the soure directory and the destination directory bidirectionally.")]
+public class SyncOptions : SrcDstOptions
 {
-	[Verb("sync", HelpText = "Sync the soure directory and the destination directory bidirectionally.")]
-	public class SyncOptions : SrcDstOptions
+	public SyncOptions(string sourceDirectory, string destinationDirectory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, bool readOnly)
+		: base(sourceDirectory, destinationDirectory, ignoreDirectories, ignoreFiles, readOnly)
 	{
-		public SyncOptions(string sourceDirectory, string destinationDirectory, IEnumerable<string> ignoreDirectories, IEnumerable<string> ignoreFiles, bool readOnly)
-			: base(sourceDirectory, destinationDirectory, ignoreDirectories, ignoreFiles, readOnly)
-		{
-		}
 	}
 }

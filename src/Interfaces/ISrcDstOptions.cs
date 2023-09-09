@@ -1,8 +1,7 @@
-namespace VersionedCopy.Interfaces
+namespace VersionedCopy.Interfaces;
+
+public interface ISrcDstOptions : IOptions
 {
-	public interface ISrcDstOptions : IOptions
-	{
-		string DestinationDirectory { get; }
-		string SourceDirectory { get; }
-	}
+	string DestinationDirectory { get; }
+	string SourceDirectory { get; }
 }

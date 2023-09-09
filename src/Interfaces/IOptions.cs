@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 
-namespace VersionedCopy.Interfaces
+namespace VersionedCopy.Interfaces;
+
+public interface IOptions
 {
-	public interface IOptions
-	{
-		IEnumerable<string> IgnoreDirectories { get; }
-		IEnumerable<string> IgnoreFiles { get; }
-		bool ReadOnly { get; }
-	}
+	IEnumerable<string> IgnoreDirectories { get; }
+	IEnumerable<string> IgnoreFiles { get; }
+	bool ReadOnly { get; }
 }
