@@ -13,9 +13,8 @@
   <ItemGroup>
     <PackageReference Include="AutoUpdateViaGitHubRelease" Version="0.1.63" />
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
-    <PackageReference Include="System.Text.Json" Version="7.0.1" />
-    <PackageReference Include="Zenseless.Patterns" Version="0.6.23" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Zenseless.Patterns" Version="0.6.35" />
   </ItemGroup>
 
 </Project>

@@ -34,7 +34,7 @@ namespace VersionedCopy.Tests
 		[DataRow("c:", "c:\\" + Snapshot.CommonFileNamePart + "\\")]
 		[DataRow("c:\\", "c:\\" + Snapshot.CommonFileNamePart + "\\")]
 		[DataRow("c:\\daten", "c:\\daten" + Snapshot.CommonFileNamePart + "\\")]
-		public void GetOldPathTest(string root, string metaDir)
+		public void GetMetaDataDirTest(string root, string metaDir)
 		{
 			var result = Snapshot.GetMetaDataDir(root);
 			Assert.AreEqual(metaDir, result);

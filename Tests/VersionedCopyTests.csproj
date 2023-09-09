@@ -16,8 +16,4 @@
     <ProjectReference Include="..\src\VersionedCopy.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="PathHelper\" />
-  </ItemGroup>
-
 </Project>
